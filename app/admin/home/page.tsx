@@ -1,0 +1,299 @@
+"use client";
+
+import {
+  LayoutDashboard,
+  Package,
+  FileText,
+  Users,
+  Truck,
+  CreditCard,
+  Settings,
+  Headphones,
+  LogOut,
+  Bell,
+  Activity,
+  TrendingUp,
+  TrendingDown,
+  AlertTriangle,
+  Clock,
+  Search
+} from "lucide-react";
+import Link from "next/link";
+
+export default function Dashboard() {
+  return (
+    <div className="flex h-screen">
+         {/* sidebar */}
+     
+      <aside className="w-64 bg-white shadow-sm flex flex-col justify-between">
+        <div>
+         
+          <div className="flex items-center justify-normal h-20">
+            <img src="/logo.png" alt="Logo" className="w-20 h-20" />
+          </div>
+
+          
+          <nav className="mt-6">
+            <ul className="space-y-2 px-4">
+              <li>
+                <Link
+                  href="/admin/home"
+                  className="flex items-center space-x-3 bg-[var(--primary)] rounded-lg px-3 py-2 text-white"
+                >
+                  <LayoutDashboard size={20} />
+                  <span>Dashboard</span>
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  href="/admin/inventory"
+                  className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
+                >
+                  <Package size={20} />
+                  <span>Inventory</span>
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  href="/admin/reports"
+                  className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
+                >
+                  <FileText size={20} />
+                  <span>Reports</span>
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  href="/admin/suppliers"
+                  className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
+                >
+                  <Truck size={20} />
+                  <span>Suppliers</span>
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  href="/admin/invoices"
+                  className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
+                >
+                  <Users size={20} />
+                  <span>Invoices</span>
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  href="/admin/payments"
+                  className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
+                >
+                  <CreditCard size={20} />
+                  <span>Payments</span>
+                </Link>
+              </li>
+            </ul>
+          </nav>
+        </div>
+
+       
+
+        <div className="px-4 pb-6 space-y-3">
+          <div className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2 cursor-pointer">
+            <Settings size={20} />
+            <span>Settings</span>
+          </div>
+          <div className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2 cursor-pointer">
+            <Headphones size={20} />
+            <span>Support</span>
+          </div>
+          <div className="flex items-center space-x-3 hover:bg-red-100 text-red-600 rounded-lg px-3 py-2 cursor-pointer">
+            <LogOut size={20} />
+            <span>Logout</span>
+          </div>
+        </div>
+      </aside>
+
+      {/* header */}
+      <div className="flex flex-col flex-1">
+       
+        <div className="flex justify-between items-center bg-white px-6 py-4 border-b h-50 border-gray-200">
+          
+           <div className="relative w-72">
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+      <input
+        type="text"
+        placeholder="Search..."
+        className="pl-10 pr-4 py-2 w-full rounded-lg bg-[var(--input-field)] outline-none focus:ring-2 focus:ring-[var(--primary)]"
+      />
+    </div>
+
+         
+          <div className="flex items-center space-x-4">
+            <Bell size={22} className="cursor-pointer" />
+            <div className="flex items-center space-x-2">
+              <img
+                src="/profile.jpg"
+                alt="User"
+                className="w-10 h-10 rounded-full"
+              />
+              <div>
+                <p className="text-sm font-semibold">Dr. Dylan</p>
+                <p className="text-xs text-gray-500">Pharmacist</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* body */}
+        <main className="flex-1 p-6 overflow-y-auto">
+          
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold">Dashboard</h1>
+              <p className="text-gray-500">Inventory Management overview</p>
+            </div>
+            <button className="px-5 py-2 bg-[var(--primary)] text-white rounded-lg shadow hover:opacity-90">
+              Generate Report
+            </button>
+          </div>
+
+         
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+           
+            <div className="bg-white rounded-2xl shadow p-6 flex items-center justify-between">
+              <div>
+                <h2 className="text-gray-500 font-medium">Total products</h2>
+                <p className="text-3xl font-bold text-gray-800">5</p>
+                <p className="text-gray-400 text-sm">~ Active stock items</p>
+              </div>
+              <div className="p-3 bg-blue-100 rounded-full">
+                <Package className="h-6 w-6 text-blue-600" />
+              </div>
+            </div>
+
+            
+            <div className="bg-white rounded-2xl shadow p-6 flex items-center justify-between">
+              <div>
+                <h2 className="text-gray-500 font-medium">Low Stock Items</h2>
+                <p className="text-3xl font-bold text-red-600">1</p>
+                <p className="text-gray-400 text-sm">~ Below reorder point</p>
+              </div>
+              <div className="p-3 bg-red-100 rounded-full">
+                <AlertTriangle className="h-6 w-6 text-red-600" />
+              </div>
+            </div>
+
+           
+            <div className="bg-white rounded-2xl shadow p-6 flex items-center justify-between">
+              <div>
+                <h2 className="text-gray-500 font-medium">Expiring Soon</h2>
+                <p className="text-3xl font-bold text-orange-600">1</p>
+                <p className="text-gray-400 text-sm">~ Within 60 days</p>
+              </div>
+              <div className="p-3 bg-orange-100 rounded-full">
+                <Clock className="h-6 w-6 text-orange-600" />
+              </div>
+            </div>
+          </div>
+
+         
+          <div className="grid grid-cols-3 gap-6 mt-6">
+            {/* Recent Activities */}
+            <div className="col-span-2 bg-white shadow rounded-lg p-5 border">
+              <h2 className="flex items-center font-semibold text-lg mb-4">
+                <Activity className="mr-2" size={20} /> Recent Activities
+              </h2>
+              <ul className="space-y-4">
+                <li className="flex justify-between items-center bg-[var(--input-field)] rounded-lg p-4">
+                  <div className="flex items-center space-x-3">
+                    <span className="bg-green-100 text-green-600 p-2 rounded-full">
+                      <TrendingUp size={20} />
+                    </span>
+                    <div>
+                      <p className="font-semibold">Paracetamol 500mg</p>
+                      <p className="text-sm text-gray-500">
+                        Received 500 Units from PharmaSupply Ltd
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-sm">PAR001</p>
+                    <p className="text-xs text-gray-500">2 hours ago</p>
+                  </div>
+                </li>
+
+                <li className="flex justify-between items-center bg-[var(--input-field)] rounded-lg p-4">
+                  <div className="flex items-center space-x-3">
+                    <span className="bg-orange-100 text-orange-600 p-2 rounded-full">
+                      <TrendingDown size={20} />
+                    </span>
+                    <div>
+                      <p className="font-semibold">Amoxicillin 250mg</p>
+                      <p className="text-sm text-gray-500">
+                        Issued 100 units to Ward A
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-sm">AMO001</p>
+                    <p className="text-xs text-gray-500">4 hours ago</p>
+                  </div>
+                </li>
+
+                <li className="flex justify-between items-center bg-[var(--input-field)] rounded-lg p-4">
+                  <div className="flex items-center space-x-3">
+                    <span className="bg-yellow-100 text-yellow-600 p-2 rounded-full">
+                      <AlertTriangle size={20} />
+                    </span>
+                    <div>
+                      <p className="font-semibold">Ibuprofen 400mg</p>
+                      <p className="text-sm text-gray-500">
+                        50 units expiring on 2024-02-15
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-sm">IBU001</p>
+                    <p className="text-xs text-gray-500">6 hours ago</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            {/* Top Products */}
+            <div className="bg-white shadow rounded-lg p-5 border">
+              <h2 className="flex items-center font-semibold text-lg mb-4">
+                <Package className="mr-2" size={20} /> Top Products
+              </h2>
+              <ul className="space-y-4">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <li key={i} className="space-y-1">
+                    <div className="flex justify-between items-center">
+                      <p className="font-medium">Paracetamol 500mg</p>
+                      <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
+                        1250
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <p>Issued: 450</p>
+                      <p>125,000 RWF</p>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-[var(--primary)] h-2 rounded-full"
+                        style={{ width: "70%" }}
+                      ></div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
