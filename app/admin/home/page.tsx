@@ -136,10 +136,11 @@ export default function Dashboard() {
           <div className="flex items-center space-x-4">
             <Bell size={22} className="cursor-pointer" />
             <div className="flex items-center space-x-2">
-              <img
+              <Image
                 src="/profile.jpg"
                 alt="User"
                 className="w-10 h-10 rounded-full"
+                width={80} height={80}
               />
               <div>
                 <p className="text-sm font-semibold">Dr. Dylan</p>
