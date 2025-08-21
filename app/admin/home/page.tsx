@@ -19,6 +19,7 @@ import {
   Search
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Dashboard() {
   return (
@@ -29,7 +30,8 @@ export default function Dashboard() {
         <div>
          
           <div className="flex items-center justify-normal h-20">
-            <img src="/logo.png" alt="Logo" className="w-20 h-20" />
+            <Image src="/logo.png" alt="Logo" width={80}   
+  height={80}   />
           </div>
 
           
