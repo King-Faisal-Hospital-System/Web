@@ -3,16 +3,30 @@
 import { UserIcon, EnvelopeIcon, PhoneIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
-import { setAccountField } from "../../store/accountSlice";
+import { setAccountField } from "../../store/slices/accountSlice";
 import type { RootState } from "../../store/store";
+import { useState } from "react";
 
 export default function CreateAccount() {
   const router = useRouter();
   const dispatch = useDispatch();
   const account = useSelector((state: RootState) => state.account);
+  const [error, setError] = useState("");
 
   const handleNext = () => {
-    console.log("Saved Account Data:", account); 
+    if (
+      !account.firstName ||
+      !account.lastName ||
+      !account.username ||
+      !account.email ||
+      !account.phone
+    ) {
+      setError("All fields are required.");
+      return;
+    }
+
+    setError("");
+    console.log("Saved Account Data:", account);
     router.push("/signin");
   };
 
@@ -27,6 +41,7 @@ export default function CreateAccount() {
         </p>
 
         <form className="space-y-4">
+          
           <div className="flex space-x-4">
             <div className="w-1/2">
               <label className="block text-sm font-medium text-text mb-1">
@@ -36,9 +51,15 @@ export default function CreateAccount() {
                 <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
                   type="text"
+                  required
                   value={account.firstName}
                   onChange={(e) =>
-                    dispatch(setAccountField({ field: "firstName", value: e.target.value }))
+                    dispatch(
+                      setAccountField({
+                        field: "firstName",
+                        value: e.target.value,
+                      })
+                    )
                   }
                   placeholder="John"
                   className="w-full pl-10 py-3 bg-input-field rounded-md border-none text-text placeholder-gray-500"
@@ -53,9 +74,15 @@ export default function CreateAccount() {
                 <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
                   type="text"
+                  required
                   value={account.lastName}
                   onChange={(e) =>
-                    dispatch(setAccountField({ field: "lastName", value: e.target.value }))
+                    dispatch(
+                      setAccountField({
+                        field: "lastName",
+                        value: e.target.value,
+                      })
+                    )
                   }
                   placeholder="Doe"
                   className="w-full pl-10 py-3 bg-input-field rounded-md border-none text-text placeholder-gray-500"
@@ -64,6 +91,7 @@ export default function CreateAccount() {
             </div>
           </div>
 
+        
           <div>
             <label className="block text-sm font-medium text-text mb-1">
               Username
@@ -72,9 +100,15 @@ export default function CreateAccount() {
               <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
                 type="text"
+                required
                 value={account.username}
                 onChange={(e) =>
-                  dispatch(setAccountField({ field: "username", value: e.target.value }))
+                  dispatch(
+                    setAccountField({
+                      field: "username",
+                      value: e.target.value,
+                    })
+                  )
                 }
                 placeholder="John"
                 className="w-full pl-10 py-3 bg-input-field rounded-md border-none text-text placeholder-gray-500"
@@ -82,6 +116,7 @@ export default function CreateAccount() {
             </div>
           </div>
 
+       
           <div>
             <label className="block text-sm font-medium text-text mb-1">
               Email Address
@@ -90,9 +125,12 @@ export default function CreateAccount() {
               <EnvelopeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
                 type="email"
+                required
                 value={account.email}
                 onChange={(e) =>
-                  dispatch(setAccountField({ field: "email", value: e.target.value }))
+                  dispatch(
+                    setAccountField({ field: "email", value: e.target.value })
+                  )
                 }
                 placeholder="John@gmail.com"
                 className="w-full pl-10 py-3 bg-input-field rounded-md border-none text-text placeholder-gray-500"
@@ -100,6 +138,7 @@ export default function CreateAccount() {
             </div>
           </div>
 
+         
           <div>
             <label className="block text-sm font-medium text-text mb-1 ">
               Phone Number
@@ -108,15 +147,20 @@ export default function CreateAccount() {
               <PhoneIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
                 type="tel"
+                required
                 value={account.phone}
                 onChange={(e) =>
-                  dispatch(setAccountField({ field: "phone", value: e.target.value }))
+                  dispatch(
+                    setAccountField({ field: "phone", value: e.target.value })
+                  )
                 }
                 placeholder="+250 788 123 4567"
                 className="w-full pl-10 py-3 bg-input-field rounded-md border-none text-text placeholder-gray-500"
               />
             </div>
           </div>
+
+          {error && <p className="text-red-500 text-sm">{error}</p>}
 
           <button
             type="button"
