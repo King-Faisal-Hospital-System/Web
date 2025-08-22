@@ -50,44 +50,11 @@ export default function SignIn() {
           >
             Stock Manager
           </button>
-          <button
-            onClick={() => handleAccountTypeClick('supplier')}
-            className={`px-4 py-2 rounded-md ${
-              accountType === 'supplier' ? 'bg-teal-800 text-white' : 'bg-gray-200 text-gray-700'
-            }`}
-          >
-            Supplier
-          </button>
+          
         </div>
 
       
         <form className="space-y-4 text-left">
-          
-          {accountType === 'supplier' && (
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Company Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="Your Company Ltd"
-                  className="w-full pl-3 py-3 bg-gray-100 rounded-md border-none text-gray-900 placeholder-gray-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Company Phone Number
-                </label>
-                <input
-                  type="text"
-                  placeholder="+250 788 123 4567"
-                  className="w-full pl-3 py-3 bg-gray-100 rounded-md border-none text-gray-900 placeholder-gray-500"
-                />
-              </div>
-            </div>
-          )}
-
           
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
