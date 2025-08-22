@@ -2,21 +2,33 @@
 
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
-import { useState as useReactState } from 'react';
-
-type AccountType = 'admin' | 'stockManager' | 'supplier';
+import { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { signIn, AccountType } from '../../store/slices/authSlice';
 
 export default function SignIn() {
   const router = useRouter();
-  const [accountType, setAccountType] = useReactState<AccountType>('stockManager');
-  const [showPassword, setShowPassword] = useReactState(false);
+  const dispatch = useDispatch();
+
+  const [accountType, setAccountType] = useState<AccountType>('stockManager');
+  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleAccountTypeClick = (type: AccountType) => {
     setAccountType(type);
   };
 
   const handleSignIn = () => {
-    alert('Signed in as ' + accountType + '!');
+    
+    dispatch(signIn({ email, accountType }));
+    alert(`Signed in as ${accountType}!`);
+    
+    if (accountType === "admin") {
+      router.push("/admin/home");
+    } else {
+      router.push("/stock-dashboard");
+    }
   };
 
   const handleCreateAccount = () => {
@@ -26,12 +38,11 @@ export default function SignIn() {
   return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4 font-sans">
       <div className="w-full max-w-md">
-       
+
         <div className="text-center">
           <h1 className="text-4xl font-bold text-black mb-2">Welcome Back!</h1>
           <p className="text-lg text-gray-600 mb-8">KFH Inventory Management</p>
         </div>
-
 
         <div className="flex justify-center space-x-4 mb-6">
           <button
@@ -50,17 +61,16 @@ export default function SignIn() {
           >
             Stock Manager
           </button>
-          
         </div>
 
-      
         <form className="space-y-4 text-left">
-          
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
             <input
               type="email"
               placeholder="john@gmail.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full pl-3 py-3 bg-gray-100 rounded-md border-none text-gray-900 placeholder-gray-500"
             />
           </div>
@@ -71,6 +81,8 @@ export default function SignIn() {
               <input
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="w-full pl-3 py-3 bg-gray-100 rounded-md border-none text-gray-900 placeholder-gray-500 pr-10"
               />
               <button
@@ -96,7 +108,6 @@ export default function SignIn() {
           </button>
         </form>
 
-       
         <p className="text-center mt-6 text-sm text-gray-600">
           Do not have an account?{' '}
           <a href="#" onClick={handleCreateAccount} className="text-teal-800 hover:underline">
