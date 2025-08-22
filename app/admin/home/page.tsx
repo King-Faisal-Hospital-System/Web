@@ -20,21 +20,22 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { useSelector } from "react-redux";
+import type { RootState } from "../../../store/store";
 
 export default function Dashboard() {
+  const dashboard = useSelector((state: RootState) => state.dashboard);
+
   return (
     <div className="flex h-screen">
-         {/* sidebar */}
-     
+      {/* sidebar */}
+      
       <aside className="w-64 bg-white shadow-sm flex flex-col justify-between">
         <div>
-         
           <div className="flex items-center justify-normal h-20">
-            <Image src="/logo.png" alt="Logo" width={80}   
-  height={80}   />
+            <Image src="/logo.png" alt="Logo" width={80} height={80} />
           </div>
 
-          
           <nav className="mt-6">
             <ul className="space-y-2 px-4">
               <li>
@@ -46,7 +47,6 @@ export default function Dashboard() {
                   <span>Dashboard</span>
                 </Link>
               </li>
-
               <li>
                 <Link
                   href="/admin/inventory"
@@ -56,7 +56,6 @@ export default function Dashboard() {
                   <span>Inventory</span>
                 </Link>
               </li>
-
               <li>
                 <Link
                   href="/admin/reports"
@@ -66,7 +65,6 @@ export default function Dashboard() {
                   <span>Reports</span>
                 </Link>
               </li>
-
               <li>
                 <Link
                   href="/admin/suppliers"
@@ -76,7 +74,6 @@ export default function Dashboard() {
                   <span>Suppliers</span>
                 </Link>
               </li>
-
               <li>
                 <Link
                   href="/admin/invoices"
@@ -86,7 +83,6 @@ export default function Dashboard() {
                   <span>Invoices</span>
                 </Link>
               </li>
-
               <li>
                 <Link
                   href="/admin/payments"
@@ -99,8 +95,6 @@ export default function Dashboard() {
             </ul>
           </nav>
         </div>
-
-       
 
         <div className="px-4 pb-6 space-y-3">
           <div className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2 cursor-pointer">
@@ -118,21 +112,19 @@ export default function Dashboard() {
         </div>
       </aside>
 
-      {/* header */}
+      
       <div className="flex flex-col flex-1">
-       
+        {/* header */}
         <div className="flex justify-between items-center bg-white px-6 py-4 border-b h-50 border-gray-200">
-          
-           <div className="relative w-72">
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-      <input
-        type="text"
-        placeholder="Search..."
-        className="pl-10 pr-4 py-2 w-full rounded-lg bg-[var(--input-field)] outline-none focus:ring-2 focus:ring-[var(--primary)]"
-      />
-    </div>
+          <div className="relative w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+            <input
+              type="text"
+              placeholder="Search..."
+              className="pl-10 pr-4 py-2 w-full rounded-lg bg-[var(--input-field)] outline-none focus:ring-2 focus:ring-[var(--primary)]"
+            />
+          </div>
 
-         
           <div className="flex items-center space-x-4">
             <Bell size={22} className="cursor-pointer" />
             <div className="flex items-center space-x-2">
@@ -140,7 +132,8 @@ export default function Dashboard() {
                 src="/profile.jpg"
                 alt="User"
                 className="w-10 h-10 rounded-full"
-                width={80} height={80}
+                width={80}
+                height={80}
               />
               <div>
                 <p className="text-sm font-semibold">Dr. Dylan</p>
@@ -152,7 +145,6 @@ export default function Dashboard() {
 
         {/* body */}
         <main className="flex-1 p-6 overflow-y-auto">
-          
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-2xl font-bold">Dashboard</h1>
@@ -163,13 +155,12 @@ export default function Dashboard() {
             </button>
           </div>
 
-         
+          
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-           
             <div className="bg-white rounded-2xl shadow p-6 flex items-center justify-between">
               <div>
                 <h2 className="text-gray-500 font-medium">Total products</h2>
-                <p className="text-3xl font-bold text-gray-800">5</p>
+                <p className="text-3xl font-bold text-gray-800">{dashboard.totalProducts}</p>
                 <p className="text-gray-400 text-sm">~ Active stock items</p>
               </div>
               <div className="p-3 bg-blue-100 rounded-full">
@@ -177,11 +168,10 @@ export default function Dashboard() {
               </div>
             </div>
 
-            
             <div className="bg-white rounded-2xl shadow p-6 flex items-center justify-between">
               <div>
                 <h2 className="text-gray-500 font-medium">Low Stock Items</h2>
-                <p className="text-3xl font-bold text-red-600">1</p>
+                <p className="text-3xl font-bold text-red-600">{dashboard.lowStockItems}</p>
                 <p className="text-gray-400 text-sm">~ Below reorder point</p>
               </div>
               <div className="p-3 bg-red-100 rounded-full">
@@ -189,11 +179,10 @@ export default function Dashboard() {
               </div>
             </div>
 
-           
             <div className="bg-white rounded-2xl shadow p-6 flex items-center justify-between">
               <div>
                 <h2 className="text-gray-500 font-medium">Expiring Soon</h2>
-                <p className="text-3xl font-bold text-orange-600">1</p>
+                <p className="text-3xl font-bold text-orange-600">{dashboard.expiringSoon}</p>
                 <p className="text-gray-400 text-sm">~ Within 60 days</p>
               </div>
               <div className="p-3 bg-orange-100 rounded-full">
@@ -202,71 +191,49 @@ export default function Dashboard() {
             </div>
           </div>
 
-         
+          
           <div className="grid grid-cols-3 gap-6 mt-6">
-            {/* Recent Activities */}
             <div className="col-span-2 bg-white shadow rounded-lg p-5 border">
               <h2 className="flex items-center font-semibold text-lg mb-4">
                 <Activity className="mr-2" size={20} /> Recent Activities
               </h2>
               <ul className="space-y-4">
-                <li className="flex justify-between items-center bg-[var(--input-field)] rounded-lg p-4">
-                  <div className="flex items-center space-x-3">
-                    <span className="bg-green-100 text-green-600 p-2 rounded-full">
-                      <TrendingUp size={20} />
-                    </span>
-                    <div>
-                      <p className="font-semibold">Paracetamol 500mg</p>
-                      <p className="text-sm text-gray-500">
-                        Received 500 Units from PharmaSupply Ltd
-                      </p>
+                {dashboard.activities.map((activity) => (
+                  <li
+                    key={activity.id}
+                    className="flex justify-between items-center bg-[var(--input-field)] rounded-lg p-4"
+                  >
+                    <div className="flex items-center space-x-3">
+                      {activity.type === "in" && (
+                        <span className="bg-green-100 text-green-600 p-2 rounded-full">
+                          <TrendingUp size={20} />
+                        </span>
+                      )}
+                      {activity.type === "out" && (
+                        <span className="bg-orange-100 text-orange-600 p-2 rounded-full">
+                          <TrendingDown size={20} />
+                        </span>
+                      )}
+                      {activity.type === "low" && (
+                        <span className="bg-yellow-100 text-yellow-600 p-2 rounded-full">
+                          <AlertTriangle size={20} />
+                        </span>
+                      )}
+                      <div>
+                        <p className="font-semibold">{activity.title}</p>
+                        <p className="text-sm text-gray-500">{activity.description}</p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-sm">PAR001</p>
-                    <p className="text-xs text-gray-500">2 hours ago</p>
-                  </div>
-                </li>
-
-                <li className="flex justify-between items-center bg-[var(--input-field)] rounded-lg p-4">
-                  <div className="flex items-center space-x-3">
-                    <span className="bg-orange-100 text-orange-600 p-2 rounded-full">
-                      <TrendingDown size={20} />
-                    </span>
-                    <div>
-                      <p className="font-semibold">Amoxicillin 250mg</p>
-                      <p className="text-sm text-gray-500">
-                        Issued 100 units to Ward A
-                      </p>
+                    <div className="text-right">
+                      <p className="font-semibold text-sm">{activity.code}</p>
+                      <p className="text-xs text-gray-500">{activity.time}</p>
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-sm">AMO001</p>
-                    <p className="text-xs text-gray-500">4 hours ago</p>
-                  </div>
-                </li>
-
-                <li className="flex justify-between items-center bg-[var(--input-field)] rounded-lg p-4">
-                  <div className="flex items-center space-x-3">
-                    <span className="bg-yellow-100 text-yellow-600 p-2 rounded-full">
-                      <AlertTriangle size={20} />
-                    </span>
-                    <div>
-                      <p className="font-semibold">Ibuprofen 400mg</p>
-                      <p className="text-sm text-gray-500">
-                        50 units expiring on 2024-02-15
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-sm">IBU001</p>
-                    <p className="text-xs text-gray-500">6 hours ago</p>
-                  </div>
-                </li>
+                  </li>
+                ))}
               </ul>
             </div>
 
-            {/* Top Products */}
+            
             <div className="bg-white shadow rounded-lg p-5 border">
               <h2 className="flex items-center font-semibold text-lg mb-4">
                 <Package className="mr-2" size={20} /> Top Products
