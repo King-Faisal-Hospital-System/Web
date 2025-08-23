@@ -4,9 +4,7 @@ import {
   LayoutDashboard,
   Package,
   FileText,
-  Users,
-  Truck,
-  CreditCard,
+
   Settings,
   Headphones,
   LogOut,
@@ -15,7 +13,7 @@ import {
   MoreHorizontal,
   Download,
   ChevronDown,
-  DollarSign,
+ 
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
