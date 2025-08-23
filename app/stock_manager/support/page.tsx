@@ -6,11 +6,10 @@ import {
   LayoutDashboard,
   Package,
   FileText,
-  Users,
-  Truck,
-  CreditCard,
+  
+  
   Settings,
-  DollarSign,
+  
   Search,
   Bell,
   Send,
