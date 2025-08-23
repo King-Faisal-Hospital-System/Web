@@ -4,9 +4,6 @@ import {
   LayoutDashboard,
   Package,
   FileText,
-  Users,
-  Truck,
-  CreditCard,
   Settings,
   Headphones,
   LogOut,
@@ -19,8 +16,8 @@ import {
   TrendingDown,
   AlertTriangle,
   Plus,
-  Download,
-  DollarSign
+  Download
+ 
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
