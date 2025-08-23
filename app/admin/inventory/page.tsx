@@ -51,7 +51,6 @@ export default function InventoryPage() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // summary calculations
   const totalMedicines = medicines.length;
   const lowStock = medicines.filter((m) => m.status === "LOW").length;
   const totalValue = medicines.reduce(
@@ -90,7 +89,7 @@ export default function InventoryPage() {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (actionType === "add") {
-      // Add logic to handle new product submission
+      
     } else if (actionType === "receipt" && selectedMedicine) {
       dispatch(recordReceipt({ id: selectedMedicine.id, quantity: parseInt(e.currentTarget.quantity.value) || 0 }));
     } else if (actionType === "issue" && selectedMedicine) {
@@ -101,7 +100,7 @@ export default function InventoryPage() {
 
   return (
     <div className="flex h-screen">
-      {/* Sidebar */}
+      {/* sidebar */}
       <aside className="w-64 bg-white shadow-sm flex flex-col justify-between">
         <div>
           <div className="flex items-center justify-start h-20">
@@ -190,9 +189,9 @@ export default function InventoryPage() {
         </div>
       </aside>
 
-      {/* Main content */}
+     
       <div className="flex flex-col flex-1">
-        {/* Header */}
+        {/* header */}
         <div className="flex justify-between items-center bg-white px-6 py-4 border-b h-50 border-gray-200">
           <div className="relative w-72">
             <Search
@@ -224,7 +223,7 @@ export default function InventoryPage() {
           </div>
         </div>
 
-        {/* Body */}
+        {/* body */}
         <main className="flex-1 p-6 overflow-y-auto">
           <div className="flex justify-between items-center mb-6">
             <div>
@@ -239,7 +238,7 @@ export default function InventoryPage() {
             </button>
           </div>
 
-          {/* Available stock */}
+          
           <div className="space-y-4">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-bold text-gray-800">
@@ -265,7 +264,7 @@ export default function InventoryPage() {
                 ref={menuRef}
                 className="p-4 border rounded-xl relative bg-white shadow-sm"
               >
-                {/* Menu button */}
+            
                 <div className="absolute top-3 right-3">
                   <button
                     onClick={() => setOpenMenu(openMenu === med.id ? null : med.id)}
@@ -298,9 +297,9 @@ export default function InventoryPage() {
                   )}
                 </div>
 
-                {/* Medicine header */}
+               
                 <div className="flex items-center space-x-3">
-                  {/* Status icon */}
+                 
                   {med.status === "GOOD" ? (
                     <div className="w-6 h-6 flex items-center justify-center rounded-full bg-green-100">
                       <Package size={16} className="text-green-600" />
@@ -323,7 +322,7 @@ export default function InventoryPage() {
                   </span>
                 </div>
 
-                {/* Medicine details */}
+               
                 <div className="grid grid-cols-6 gap-6 text-sm mt-3 text-gray-700">
                   <p>Batch: <span className="font-medium">{med.batch}</span></p>
                   <p>Received: <span className="font-medium">{med.received}</span></p>
@@ -335,12 +334,12 @@ export default function InventoryPage() {
                   <p>Unit Cost: <span className="font-medium">{med.unitCost} Rwf</span></p>
                 </div>
 
-                {/* Total value */}
+               
                 <p className="text-gray-800 mt-2 font-semibold">
                   Total Value: {(med.received * med.unitCost).toLocaleString()} Rwf
                 </p>
 
-                {/* Low stock alert */}
+              
                 {med.status === "LOW" && (
                   <div className="mt-3 bg-orange-50 border border-orange-200 text-orange-700 p-3 text-sm rounded-lg">
                     Low stock level – Only {med.balance} units remaining (Reorder needed)
@@ -350,7 +349,7 @@ export default function InventoryPage() {
             ))}
           </div>
 
-          {/* Footer summary */}
+         
           <div className="flex justify-between items-center mt-6 text-sm text-gray-600">
             <p>
               Total: <span className="font-semibold">{totalMedicines}</span> medicines •
@@ -364,7 +363,7 @@ export default function InventoryPage() {
           </div>
         </main>
 
-        {/* Modal */}
+       
         {isModalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-lg shadow-lg w-[40rem]">
