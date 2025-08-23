@@ -12,8 +12,8 @@ import {
   LogOut,
   Bell,
   Search,
-  Database,
-  RotateCcw,
+  
+  
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
