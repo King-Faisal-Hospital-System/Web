@@ -27,7 +27,7 @@ export default function SignIn() {
     if (accountType === "admin") {
       router.push("/admin/home");
     } else {
-      router.push("/stock-dashboard");
+      router.push("/stock_manager/home");
     }
   };
 

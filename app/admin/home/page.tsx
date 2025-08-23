@@ -16,7 +16,8 @@ import {
   TrendingDown,
   AlertTriangle,
   Clock,
-  Search
+  Search,
+  DollarSign
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -79,7 +80,7 @@ export default function Dashboard() {
                   href="/admin/invoices"
                   className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
                 >
-                  <Users size={20} />
+                  <DollarSign size={20} />
                   <span>Invoices</span>
                 </Link>
               </li>
@@ -92,24 +93,33 @@ export default function Dashboard() {
                   <span>Payments</span>
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/admin/users"
+                  className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
+                >
+                  <Users size={20} />
+                  <span>Users</span>
+                </Link>
+              </li>
             </ul>
           </nav>
         </div>
 
         <div className="px-4 pb-6 space-y-3">
-          <div className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2 cursor-pointer">
-            <Settings size={20} />
-            <span>Settings</span>
-          </div>
-          <div className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2 cursor-pointer">
-            <Headphones size={20} />
-            <span>Support</span>
-          </div>
-          <div className="flex items-center space-x-3 hover:bg-red-100 text-red-600 rounded-lg px-3 py-2 cursor-pointer">
-            <LogOut size={20} />
-            <span>Logout</span>
-          </div>
-        </div>
+  <Link href="/admin/settings" className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2 cursor-pointer">
+    <Settings size={20} />
+    <span>Settings</span>
+  </Link>
+  <Link href="/admin/support" className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2 cursor-pointer">
+    <Headphones size={20} />
+    <span>Support</span>
+  </Link>
+  <Link href="/admin/logout" className="flex items-center space-x-3 hover:bg-red-100 text-red-600 rounded-lg px-3 py-2 cursor-pointer">
+    <LogOut size={20} />
+    <span>Logout</span>
+  </Link>
+</div>
       </aside>
 
       
