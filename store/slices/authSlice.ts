@@ -1,19 +1,17 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-export type AccountType = "admin" | "stockManager";
+export type AccountType = "ADMIN" | "STOCK_MANAGER" | "NULL"; // add null state for unauthorized sh*t
 
 interface AuthState {
   email: string;
   accountType: AccountType;
   isAuthenticated: boolean;
-  token?: string; 
 }
 
 const initialState: AuthState = {
   email: "",
-  accountType: "stockManager",
+  accountType: "NULL",
   isAuthenticated: false,
-  token: undefined,
 };
 
 const authSlice = createSlice({
@@ -22,18 +20,16 @@ const authSlice = createSlice({
   reducers: {
     signIn: (
       state,
-      action: PayloadAction<{ email: string; accountType: AccountType; token?: string }>
+      action: PayloadAction<{ email: string; accountType: AccountType; }>
     ) => {
       state.email = action.payload.email;
       state.accountType = action.payload.accountType;
       state.isAuthenticated = true;
-      state.token = action.payload.token; 
     },
     signOut: (state) => {
       state.email = "";
-      state.accountType = "stockManager";
+      state.accountType = "NULL";
       state.isAuthenticated = false;
-      state.token = undefined;
     },
   },
 });

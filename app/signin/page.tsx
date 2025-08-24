@@ -5,12 +5,13 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { signIn as signInRedux, AccountType } from "../../store/slices/authSlice";
+import api from "@/lib/api";
 
 export default function SignIn() {
   const router = useRouter();
   const dispatch = useDispatch();
 
-  const [accountType, setAccountType] = useState<AccountType>("stockManager");
+  const [accountType, setAccountType] = useState<AccountType>("ADMIN");
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,32 +26,21 @@ export default function SignIn() {
       alert("Please enter email and password");
       return;
     }
-
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          password,
-          role: accountType.toUpperCase(),
-        }),
+      const res = await api.post("/auth/login", {
+        email,
+        password,
+        role: accountType
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.message || "Login failed.");
-        return;
+      const data = await res.data;
+      if (data.message) {
+        // Get currently logged in user as per cookie set in cookie storage
+        const result = await api.get("/users/me");
+        const { user } = result.data;
+        dispatch(signInRedux({ email: user.email, accountType: user.role }));
+        router.push(accountType === "ADMIN" ? "/admin/home" : "/stock_manager/home");
       }
-
-    
-      dispatch(signInRedux({ email: data.user.email, accountType, token: data.token }));
-
-      alert(`Signed in as ${accountType}!`);
-
-      router.push(accountType === "admin" ? "/admin/home" : "/stock_manager/home");
     } catch (error) {
       console.error("Login error:", error);
       alert("Something went wrong. Try again.");
@@ -73,18 +63,16 @@ export default function SignIn() {
 
         <div className="flex justify-center space-x-4 mb-6">
           <button
-            onClick={() => handleAccountTypeClick("admin")}
-            className={`px-4 py-2 rounded-md ${
-              accountType === "admin" ? "bg-teal-800 text-white" : "bg-gray-200 text-gray-700"
-            }`}
+            onClick={() => handleAccountTypeClick("ADMIN")}
+            className={`px-4 py-2 rounded-md ${accountType === "ADMIN" ? "bg-teal-800 text-white" : "bg-gray-200 text-gray-700"
+              }`}
           >
             Admin
           </button>
           <button
-            onClick={() => handleAccountTypeClick("stockManager")}
-            className={`px-4 py-2 rounded-md ${
-              accountType === "stockManager" ? "bg-teal-800 text-white" : "bg-gray-200 text-gray-700"
-            }`}
+            onClick={() => handleAccountTypeClick("STOCK_MANAGER")}
+            className={`px-4 py-2 rounded-md ${accountType === "STOCK_MANAGER" ? "bg-teal-800 text-white" : "bg-gray-200 text-gray-700"
+              }`}
           >
             Stock Manager
           </button>
