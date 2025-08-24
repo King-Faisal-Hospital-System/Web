@@ -6,6 +6,8 @@ interface AccountState {
   username: string;
   email: string;
   phone: string;
+  password: string;         
+  confirmPassword?: string;  
 }
 
 const initialState: AccountState = {
@@ -14,6 +16,8 @@ const initialState: AccountState = {
   username: "",
   email: "",
   phone: "",
+  password: "",            
+  confirmPassword: "",      
 };
 
 const accountSlice = createSlice({

@@ -1,6 +1,6 @@
 "use client";
 
-import { UserIcon, EnvelopeIcon, PhoneIcon } from "@heroicons/react/24/outline";
+import { UserIcon, EnvelopeIcon, PhoneIcon, LockClosedIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { setAccountField } from "../../store/slices/accountSlice";
@@ -12,22 +12,52 @@ export default function CreateAccount() {
   const dispatch = useDispatch();
   const account = useSelector((state: RootState) => state.account);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (
       !account.firstName ||
       !account.lastName ||
       !account.username ||
       !account.email ||
-      !account.phone
+      !account.phone ||
+      !account.password
     ) {
       setError("All fields are required.");
       return;
     }
 
     setError("");
-    console.log("Saved Account Data:", account);
-    router.push("/signin");
+    setLoading(true);
+
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullname: `${account.firstName} ${account.lastName}`,
+          username: account.username,
+          email: account.email,
+          phone_number: account.phone,
+          password: account.password,
+          role: "STOCK_MANAGER", 
+        }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.message || "Failed to create account");
+      }
+
+      const data = await res.json();
+      console.log("Account saved:", data);
+
+      router.push("/signin");
+    } catch (err: any) {
+      setError(err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -41,7 +71,7 @@ export default function CreateAccount() {
         </p>
 
         <form className="space-y-4">
-          
+         
           <div className="flex space-x-4">
             <div className="w-1/2">
               <label className="block text-sm font-medium text-text mb-1">
@@ -91,7 +121,7 @@ export default function CreateAccount() {
             </div>
           </div>
 
-        
+         
           <div>
             <label className="block text-sm font-medium text-text mb-1">
               Username
@@ -110,13 +140,13 @@ export default function CreateAccount() {
                     })
                   )
                 }
-                placeholder="John"
+                placeholder="johndoe"
                 className="w-full pl-10 py-3 bg-input-field rounded-md border-none text-text placeholder-gray-500"
               />
             </div>
           </div>
 
-       
+          
           <div>
             <label className="block text-sm font-medium text-text mb-1">
               Email Address
@@ -132,7 +162,7 @@ export default function CreateAccount() {
                     setAccountField({ field: "email", value: e.target.value })
                   )
                 }
-                placeholder="John@gmail.com"
+                placeholder="john@gmail.com"
                 className="w-full pl-10 py-3 bg-input-field rounded-md border-none text-text placeholder-gray-500"
               />
             </div>
@@ -160,14 +190,37 @@ export default function CreateAccount() {
             </div>
           </div>
 
+        
+          <div>
+            <label className="block text-sm font-medium text-text mb-1 ">
+              Password
+            </label>
+            <div className="relative">
+              <LockClosedIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="password"
+                required
+                value={account.password}
+                onChange={(e) =>
+                  dispatch(
+                    setAccountField({ field: "password", value: e.target.value })
+                  )
+                }
+                placeholder="********"
+                className="w-full pl-10 py-3 bg-input-field rounded-md border-none text-text placeholder-gray-500"
+              />
+            </div>
+          </div>
+
           {error && <p className="text-red-500 text-sm">{error}</p>}
 
           <button
             type="button"
             onClick={handleNext}
+            disabled={loading}
             className="w-full py-3 bg-primary text-white font-semibold rounded-md"
           >
-            Create Account
+            {loading ? "Creating..." : "Create Account"}
           </button>
         </form>
 
