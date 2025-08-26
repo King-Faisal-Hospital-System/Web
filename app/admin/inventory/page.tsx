@@ -65,7 +65,7 @@ interface FormData {
   category: string;
   form: string;
   product_description: string;
-  supplierId: string;
+  supplierId: string | "";
   batch: string;
   received: number;
   expiry: string;
@@ -219,7 +219,7 @@ export default function InventoryPage() {
     e.preventDefault();
 
     if (actionType === "add") {
-      if (!formData.name || !formData.category || !formData.form || !formData.supplierId || formData.received < 0) {
+      if (!formData.name || !formData.category || !formData.form || formData.received < 0) {
         alert(t("Please fill in all required fields: Product Name, Category, Unit, Supplier, and valid Quantity."));
         return;
       }
@@ -416,7 +416,7 @@ export default function InventoryPage() {
     <Headphones size={20} />
     <span>Support</span>
   </Link>
-  <Link href="/admin/logout" className="flex items-center space-x-3 hover:bg-red-100 text-red-600 rounded-lg px-3 py-2 cursor-pointer">
+  <Link href="/signin" className="flex items-center space-x-3 hover:bg-red-100 text-red-600 rounded-lg px-3 py-2 cursor-pointer">
     <LogOut size={20} />
     <span>Logout</span>
   </Link>
@@ -772,7 +772,6 @@ export default function InventoryPage() {
                               value={formData.supplierId}
                               onChange={handleInputChange}
                               className="mt-1 p-2 w-full border rounded-lg bg-gray-100"
-                              required={actionType !== "receipt"}
                               disabled={actionType === "receipt"}
                             >
                               <option value="">{t("Select supplier")}</option>

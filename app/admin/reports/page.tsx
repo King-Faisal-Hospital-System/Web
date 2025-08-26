@@ -217,7 +217,7 @@ export default function ReportsPage() {
             <span>Support</span>
           </Link>
           <Link
-            href="/admin/logout"
+            href="/signin"
             className="flex items-center space-x-3 hover:bg-red-100 text-red-600 rounded-lg px-3 py-2 cursor-pointer"
           >
             <LogOut size={20} />
