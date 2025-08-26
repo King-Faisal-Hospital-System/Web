@@ -11,7 +11,7 @@ const API_URL = "http://localhost:5000/api/admin";
 
 const api = axios.create({
   baseURL: API_URL,
-  withCredentials: true, // important to send cookies
+  withCredentials: true, 
 });
 
 // Fetch all users

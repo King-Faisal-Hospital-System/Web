@@ -20,17 +20,9 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-
-interface Supplier {
-  id: string;
-  name: string;
-  contactPerson: string;
-  email: string;
-  phone: string;
-  orders: number;
-  totalValue: string;
-  status: "active" | "pending";
-}
+import { useSelector, useDispatch } from "react-redux";
+import { RootState, AppDispatch } from "@/store/store";
+import { fetchSuppliers, addSupplier, updateSupplier, deleteSupplier, Supplier } from "@/store/slices/supplierSlice";
 
 interface PurchaseOrder {
   id: string;
@@ -41,38 +33,7 @@ interface PurchaseOrder {
   status: string;
 }
 
-const suppliersData: Supplier[] = [
-  {
-    id: "1",
-    name: "PharmaSupply Ltd",
-    contactPerson: "Alice Uwimana",
-    email: "pharma@supply.rw",
-    phone: "+250 788 123 456",
-    orders: 5,
-    totalValue: "2,500,000 RWF",
-    status: "active",
-  },
-  {
-    id: "2",
-    name: "MediHealth Ltd",
-    contactPerson: "Eric Nkurunziza",
-    email: "medihealth@supply.rw",
-    phone: "+250 788 654 321",
-    orders: 3,
-    totalValue: "1,200,000 RWF",
-    status: "active",
-  },
-  {
-    id: "3",
-    name: "LifeCare Ltd",
-    contactPerson: "Grace Mukamana",
-    email: "lifecare@supply.rw",
-    phone: "+250 789 123 987",
-    orders: 7,
-    totalValue: "3,800,000 RWF",
-    status: "pending",
-  },
-];
+
 
 const purchaseOrdersData: PurchaseOrder[] = [
   {
@@ -101,6 +62,25 @@ export default function SuppliersPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
+  const [actionType, setActionType] = useState<"add" | "edit">("add");
+  const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
+  const [formData, setFormData] = useState({
+    company_name: "",
+    contact_person: "",
+    company_email: "",
+    company_phone: "",
+    address: "",
+    tax_id: "",
+    payment_terms: "",
+  });
+
+  const { suppliers, loading, error } = useSelector((state: RootState) => state.suppliers);
+  const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    dispatch(fetchSuppliers());
+  }, [dispatch]);
 
   const handleMenuToggle = (id: string) => {
     setOpenSupplierId(openSupplierId === id ? null : id);
@@ -117,11 +97,11 @@ export default function SuppliersPage() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const totalSuppliers = suppliersData.length;
-  const activeSuppliers = suppliersData.filter((s) => s.status === "active").length;
-  const pendingApprovals = suppliersData.filter((s) => s.status === "pending").length;
+  const totalSuppliers = suppliers.length;
+  const activeSuppliers = suppliers.filter((s: any) => s.isVerified === true).length;
+  const pendingApprovals = suppliers.filter((s: any) => s.isVerified === false).length;
 
-  //  filtering purchase orders 
+  
   const filteredOrders = purchaseOrdersData.filter(
     (order) =>
       (statusFilter === "All" || order.status === statusFilter) &&
@@ -131,17 +111,81 @@ export default function SuppliersPage() {
   );
 
   const handleAddSupplier = () => {
+    setSelectedSupplier(null);
+    setEditingSupplier(null);
+    setActionType("add");
+    setFormData({
+      company_name: "",
+      contact_person: "",
+      company_email: "",
+      company_phone: "",
+      address: "",
+      tax_id: "",
+      payment_terms: "",
+    });
     setIsModalOpen(true);
+  };
+
+  const handleEditSupplier = (supplier: Supplier) => {
+    setSelectedSupplier(supplier);
+    setEditingSupplier(supplier);
+    setActionType("edit");
+    setFormData({
+      company_name: supplier.company_name,
+      contact_person: supplier.contact_person,
+      company_email: supplier.company_email,
+      company_phone: supplier.company_phone,
+      address: supplier.address || "",
+      tax_id: supplier.tax_id || "",
+      payment_terms: supplier.payment_terms ? supplier.payment_terms.toString() : "",
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteSupplier = (supplierId: string) => {
+    if (confirm("Are you sure you want to delete this supplier?")) {
+      dispatch(deleteSupplier(supplierId)).then(() => {
+        dispatch(fetchSuppliers());
+      });
+    }
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    setSelectedSupplier(null);
+    setEditingSupplier(null);
+    setActionType("add");
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-  
+    
+    if (!formData.company_name || !formData.contact_person || !formData.company_email || !formData.company_phone) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    if (actionType === "add") {
+      dispatch(addSupplier(formData)).then(() => {
+        dispatch(fetchSuppliers());
+      });
+    } else if (actionType === "edit" && selectedSupplier) {
+      dispatch(updateSupplier({ id: selectedSupplier._id, ...formData })).then(() => {
+        dispatch(fetchSuppliers());
+      });
+    }
+
     setIsModalOpen(false);
+    setSelectedSupplier(null);
+    setActionType("add");
   };
 
   const paymentTerms = ["15 Days", "30 Days", "45 Days"];
@@ -349,44 +393,67 @@ export default function SuppliersPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {suppliersData.map((s) => (
-                    <tr key={s.id} className="border-t border-gray-100">
-                      <td className="py-4">
-                        <p className="font-semibold">{s.name}</p>
-                        <p className="text-xs text-gray-500">TIN: 123456789</p>
-                      </td>
-                      <td className="py-4">{s.contactPerson}</td>
-                      <td className="py-4 text-sm">
-                        <p className="text-[var(--primary)] font-medium">
-                          {s.email}
-                        </p>
-                        <p>{s.phone}</p>
-                      </td>
-                      <td className="py-4">{s.orders}</td>
-                      <td className="py-4">{s.totalValue}</td>
-                      <td className="py-4 text-right relative">
-                        <button
-                          onClick={() => handleMenuToggle(s.id)}
-                          className="menu-button inline-flex items-center justify-center h-8 w-8 rounded-full hover:bg-gray-100"
-                        >
-                          <MoreHorizontal size={18} />
-                        </button>
-                        {openSupplierId === s.id && (
-                          <div className="supplier-menu absolute right-0 mt-2 w-36 bg-white border border-gray-200 shadow-lg rounded-lg overflow-hidden z-10">
-                            <button className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50">
-                              View
-                            </button>
-                            <button className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50">
-                              Edit
-                            </button>
-                            <button className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50">
-                              Create Order
-                            </button>
-                          </div>
-                        )}
+                  {loading ? (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[var(--primary)] mx-auto"></div>
                       </td>
                     </tr>
-                  ))}
+                  ) : error ? (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center text-red-500">
+                        Error: {error}
+                      </td>
+                    </tr>
+                  ) : suppliers.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center text-gray-500">
+                        No suppliers found
+                      </td>
+                    </tr>
+                  ) : (
+                    suppliers.map((s: any) => (
+                      <tr key={s._id} className="border-t border-gray-100">
+                        <td className="py-4">
+                          <p className="font-semibold">{s.company_name}</p>
+                          <p className="text-xs text-gray-500">TIN: {s.tax_id || "N/A"}</p>
+                        </td>
+                        <td className="py-4">{s.contact_person}</td>
+                        <td className="py-4 text-sm">
+                          <p className="text-[var(--primary)] font-medium">
+                            {s.company_email}
+                          </p>
+                          <p>{s.company_phone}</p>
+                        </td>
+                        <td className="py-4">{s.orders || 0}</td>
+                        <td className="py-4">{s.totalValue || "0 RWF"}</td>
+                        <td className="py-4 text-right relative">
+                          <button
+                            onClick={() => handleMenuToggle(s._id)}
+                            className="menu-button inline-flex items-center justify-center h-8 w-8 rounded-full hover:bg-gray-100"
+                          >
+                            <MoreHorizontal size={18} />
+                          </button>
+                          {openSupplierId === s._id && (
+                            <div className="supplier-menu absolute right-0 mt-2 w-36 bg-white border border-gray-200 shadow-lg rounded-lg overflow-hidden z-10">
+                              <button 
+                                onClick={() => handleEditSupplier(s)}
+                                className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+                              >
+                                Edit
+                              </button>
+                              <button 
+                                onClick={() => handleDeleteSupplier(s._id)}
+                                className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 text-red-600"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -463,7 +530,7 @@ export default function SuppliersPage() {
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
               <div className="bg-white p-6 rounded-lg shadow-lg w-[40rem]">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-lg font-bold">Add Supplier</h2>
+                  <h2 className="text-lg font-bold">{editingSupplier ? 'Edit Supplier' : 'Add Supplier'}</h2>
                   <button onClick={handleCloseModal} className="text-gray-500 hover:text-gray-700">
                     &times;
                   </button>
@@ -475,16 +542,24 @@ export default function SuppliersPage() {
                         <label className="block text-sm font-medium text-gray-700">Company Name</label>
                         <input
                           type="text"
+                          name="company_name"
+                          value={formData.company_name}
+                          onChange={handleInputChange}
                           placeholder="Company name"
                           className="mt-1 p-2 w-full border rounded-lg bg-gray-100"
+                          required
                         />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700">Contact Person</label>
                         <input
                           type="text"
+                          name="contact_person"
+                          value={formData.contact_person}
+                          onChange={handleInputChange}
                           placeholder="Contact person name"
                           className="mt-1 p-2 w-full border rounded-lg bg-gray-100"
+                          required
                         />
                       </div>
                     </div>
@@ -493,25 +568,37 @@ export default function SuppliersPage() {
                         <label className="block text-sm font-medium text-gray-700">Email</label>
                         <input
                           type="email"
+                          name="company_email"
+                          value={formData.company_email}
+                          onChange={handleInputChange}
                           placeholder="email@company.com"
                           className="mt-1 p-2 w-full border rounded-lg bg-gray-100"
+                          required
                         />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700">Phone</label>
                         <input
                           type="tel"
+                          name="company_phone"
+                          value={formData.company_phone}
+                          onChange={handleInputChange}
                           placeholder="+250 788 123 456"
                           className="mt-1 p-2 w-full border rounded-lg bg-gray-100"
+                          required
                         />
                       </div>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Address</label>
                       <textarea
+                        name="address"
+                        value={formData.address}
+                        onChange={handleInputChange}
                         placeholder="Complete address"
                         className="mt-1 p-2 w-full border rounded-lg bg-gray-100"
                         rows={2}
+                        required
                       ></textarea>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -519,13 +606,21 @@ export default function SuppliersPage() {
                         <label className="block text-sm font-medium text-gray-700">Tax ID</label>
                         <input
                           type="text"
+                          name="tax_id"
+                          value={formData.tax_id}
+                          onChange={handleInputChange}
                           placeholder="TIN-123456789"
                           className="mt-1 p-2 w-full border rounded-lg bg-gray-100"
                         />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700">Payment Terms (Days)</label>
-                        <select className="mt-1 p-2 w-full border rounded-lg bg-gray-100">
+                        <select 
+                          name="payment_terms"
+                          value={formData.payment_terms}
+                          onChange={handleInputChange}
+                          className="mt-1 p-2 w-full border rounded-lg bg-gray-100"
+                        >
                           <option value="">Select payment terms</option>
                           {paymentTerms.map((term) => (
                             <option key={term} value={term}>{term}</option>
@@ -543,9 +638,10 @@ export default function SuppliersPage() {
                       </button>
                       <button
                         type="submit"
-                        className="px-4 py-2 bg-[var(--primary)] text-white rounded-lg"
+                        disabled={loading}
+                        className="px-4 py-2 bg-[var(--primary)] text-white rounded-lg disabled:opacity-50"
                       >
-                        Add Supplier
+                        {loading ? 'Saving...' : (editingSupplier ? 'Update Supplier' : 'Add Supplier')}
                       </button>
                     </div>
                   </div>

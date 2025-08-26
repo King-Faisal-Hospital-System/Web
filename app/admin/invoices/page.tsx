@@ -23,23 +23,10 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
-
-interface Invoice {
-  id: string;
-  type: string;
-  supplier: string;
-  amount: string;
-  issueDate: string;
-  dueDate: string;
-  status: string;
-}
-
-const invoicesData: Invoice[] = [
-  { id: "INV-2024-001", type: "Proforma", supplier: "PharmaSupply Ltd", amount: "250,000 RWF", issueDate: "2024-01-25", dueDate: "2024-01-25", status: "Draft" },
-  { id: "INV-2024-002", type: "Regular", supplier: "PharmaSupply Ltd", amount: "250,000 RWF", issueDate: "2024-01-25", dueDate: "2024-01-25", status: "Paid" },
-  { id: "INV-2024-003", type: "Regular", supplier: "PharmaSupply Ltd", amount: "250,000 RWF", issueDate: "2024-01-25", dueDate: "2024-01-25", status: "Sent" },
-  { id: "INV-2024-004", type: "Proforma", supplier: "PharmaSupply Ltd", amount: "250,000 RWF", issueDate: "2024-01-25", dueDate: "2024-01-25", status: "Pending" },
-];
+import { useSelector, useDispatch } from "react-redux";
+import { RootState, AppDispatch } from "@/store/store";
+import { fetchInvoices, createInvoice, updateInvoice, deleteInvoice, Invoice } from "@/store/slices/invoiceSlice";
+import { fetchSuppliers } from "@/store/slices/supplierSlice";
 
 export default function InvoicesPage() {
   const [search, setSearch] = useState("");
@@ -47,12 +34,28 @@ export default function InvoicesPage() {
   const [openInvoiceId, setOpenInvoiceId] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
+  const [formData, setFormData] = useState({
+    type: "REGULAR" as "PROFORMA" | "REGULAR",
+    total_value: "",
+    notes: "",
+    purchase_order: "",
+  });
 
-  const filteredInvoices = invoicesData.filter(
+  const { invoices, loading, error } = useSelector((state: RootState) => state.invoices);
+  const { suppliers } = useSelector((state: RootState) => state.suppliers);
+  const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    dispatch(fetchInvoices());
+    dispatch(fetchSuppliers());
+  }, [dispatch]);
+
+  const filteredInvoices = invoices.filter(
     (invoice) =>
       (statusFilter === "All" || invoice.status === statusFilter) &&
-      (invoice.id.toLowerCase().includes(search.toLowerCase()) ||
-        invoice.supplier.toLowerCase().includes(search.toLowerCase()))
+      (invoice._id.toLowerCase().includes(search.toLowerCase()) ||
+        invoice.notes?.toLowerCase().includes(search.toLowerCase()))
   );
 
   const handleMenuToggle = (id: string) => {
@@ -73,21 +76,77 @@ export default function InvoicesPage() {
   }, []);
 
   const handleCreateInvoice = () => {
+    setEditingInvoice(null);
+    setFormData({
+      type: "REGULAR",
+      total_value: "",
+      notes: "",
+      purchase_order: "",
+    });
     setIsModalOpen(true);
+  };
+
+  const handleEditInvoice = (invoice: Invoice) => {
+    setEditingInvoice(invoice);
+    setFormData({
+      type: invoice.type,
+      total_value: invoice.total_value.toString(),
+      notes: invoice.notes || "",
+      purchase_order: invoice.purchase_order || "",
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteInvoice = (invoiceId: string) => {
+    if (confirm("Are you sure you want to delete this invoice?")) {
+      dispatch(deleteInvoice(invoiceId)).then(() => {
+        dispatch(fetchInvoices());
+      });
+    }
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    setEditingInvoice(null);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Add logic to handle form submission
+    
+    if (!formData.type || !formData.total_value) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    const invoiceData = {
+      ...formData,
+      total_value: parseFloat(formData.total_value),
+    };
+
+    if (editingInvoice) {
+      dispatch(updateInvoice({ id: editingInvoice._id, ...invoiceData })).then(() => {
+        dispatch(fetchInvoices());
+      });
+    } else {
+      dispatch(createInvoice(invoiceData)).then(() => {
+        dispatch(fetchInvoices());
+      });
+    }
+
     setIsModalOpen(false);
   };
 
-  const invoiceTypes = ["Proforma", "Regular"];
-  const suppliers = ["PharmaSupply Ltd", "MediHealth Ltd", "LifeCare Ltd"];
+  const totalInvoices = invoices.length;
+  const pendingInvoices = invoices.filter(inv => inv.status === "PENDING").length;
+  const totalValue = invoices.reduce((sum, inv) => sum + inv.total_value, 0);
 
   return (
     <div className="flex h-screen">
@@ -216,15 +275,15 @@ export default function InvoicesPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
               <p className="text-gray-500 text-sm mb-1">Total Invoices</p>
-              <p className="text-xl font-bold tracking-tight">4</p>
+              <p className="text-xl font-bold tracking-tight">{totalInvoices}</p>
             </div>
             <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
               <p className="text-gray-500 text-sm mb-1">Pending Payment</p>
-              <p className="text-xl font-bold tracking-tight text-orange-500">1</p>
+              <p className="text-xl font-bold tracking-tight text-orange-500">{pendingInvoices}</p>
             </div>
             <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
               <p className="text-gray-500 text-sm mb-1">Total Value</p>
-              <p className="text-xl font-bold tracking-tight">995,000 RWF</p>
+              <p className="text-xl font-bold tracking-tight">{totalValue.toLocaleString()} RWF</p>
             </div>
           </div>
 
@@ -236,15 +295,15 @@ export default function InvoicesPage() {
                 onChange={(e) => setStatusFilter(e.target.value)}
                 className="px-3 py-2 border rounded-md"
               >
-                <option>All Status</option>
-                <option>Draft</option>
-                <option>Paid</option>
-                <option>Sent</option>
-                <option>Pending</option>
+                <option value="All">All Status</option>
+                <option value="DRAFT">Draft</option>
+                <option value="PAID">Paid</option>
+                <option value="SENT">Sent</option>
+                <option value="PENDING">Pending</option>
               </select>
             </div>
 
-            <h2 className="text-lg font-semibold mb-5">Invoices (5)</h2>
+            <h2 className="text-lg font-semibold mb-5">Invoices ({filteredInvoices.length})</h2>
             <table className="w-full text-left">
               <thead>
                 <tr className="text-xs text-gray-500">
@@ -259,59 +318,76 @@ export default function InvoicesPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredInvoices.map((invoice) => (
-                  <tr key={invoice.id} className="border-t border-gray-100">
-                    <td className="py-4">{invoice.id}</td>
-                    <td className="py-4">{invoice.type}</td>
-                    <td className="py-4 font-semibold">{invoice.supplier}</td>
-                    <td className="py-4">{invoice.amount}</td>
-                    <td className="py-4">{invoice.issueDate}</td>
-                    <td className="py-4">{invoice.dueDate}</td>
-                    <td className="py-4">
-                      <span
-                        className={`px-3 py-1 rounded-md text-white text-xs ${
-                          invoice.status === "Draft"
-                            ? "bg-gray-400"
-                            : invoice.status === "Paid"
-                            ? "bg-green-600"
-                            : invoice.status === "Sent"
-                            ? "bg-green-400"
-                            : "bg-orange-500"
-                        }`}
-                      >
-                        {invoice.status}
-                      </span>
-                    </td>
-                    <td className="py-4 text-right relative">
-                      <button
-                        onClick={() => handleMenuToggle(invoice.id)}
-                        className="menu-button inline-flex items-center justify-center h-8 w-8 rounded-full hover:bg-gray-100"
-                      >
-                        <MoreHorizontal size={18} />
-                      </button>
-                      {openInvoiceId === invoice.id && (
-                        <div ref={menuRef} className="invoice-menu absolute right-0 mt-2 w-40 bg-white border border-gray-200 shadow-lg rounded-lg overflow-hidden z-10">
-                          <button className="w-full flex items-center space-x-2 text-left px-4 py-2 text-sm hover:bg-gray-50">
-                            <Eye size={16} />
-                            <span>View</span>
-                          </button>
-                          <button className="w-full flex items-center space-x-2 text-left px-4 py-2 text-sm hover:bg-gray-50">
-                            <Edit size={16} />
-                            <span>Edit Invoice</span>
-                          </button>
-                          <button className="w-full flex items-center space-x-2 text-left px-4 py-2 text-sm hover:bg-gray-50">
-                            <Send size={16} />
-                            <span>Send Invoice</span>
-                          </button>
-                          <button className="w-full flex items-center space-x-2 text-left px-4 py-2 text-sm hover:bg-gray-50">
-                            <Download size={16} />
-                            <span>Download PDF</span>
-                          </button>
-                        </div>
-                      )}
+                {loading ? (
+                  <tr>
+                    <td colSpan={8} className="py-8 text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[var(--primary)] mx-auto"></div>
                     </td>
                   </tr>
-                ))}
+                ) : error ? (
+                  <tr>
+                    <td colSpan={8} className="py-8 text-center text-red-500">
+                      Error: {error}
+                    </td>
+                  </tr>
+                ) : filteredInvoices.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="py-8 text-center text-gray-500">
+                      No invoices found
+                    </td>
+                  </tr>
+                ) : (
+                  filteredInvoices.map((invoice) => (
+                    <tr key={invoice._id} className="border-t border-gray-100">
+                      <td className="py-4">INV-{invoice._id.slice(-6)}</td>
+                      <td className="py-4">{invoice.type}</td>
+                      <td className="py-4 font-semibold">{invoice.supplier || "N/A"}</td>
+                      <td className="py-4">{invoice.total_value.toLocaleString()} RWF</td>
+                      <td className="py-4">{new Date(invoice.createdAt || "").toLocaleDateString()}</td>
+                      <td className="py-4">{invoice.dueDate || "N/A"}</td>
+                      <td className="py-4">
+                        <span
+                          className={`px-3 py-1 rounded-md text-white text-xs ${
+                            invoice.status === "DRAFT"
+                              ? "bg-gray-400"
+                              : invoice.status === "PAID"
+                              ? "bg-green-600"
+                              : invoice.status === "SENT"
+                              ? "bg-green-400"
+                              : "bg-orange-500"
+                          }`}
+                        >
+                          {invoice.status}
+                        </span>
+                      </td>
+                      <td className="py-4 text-right relative">
+                        <button
+                          onClick={() => handleMenuToggle(invoice._id)}
+                          className="menu-button inline-flex items-center justify-center h-8 w-8 rounded-full hover:bg-gray-100"
+                        >
+                          <MoreHorizontal size={18} />
+                        </button>
+                        {openInvoiceId === invoice._id && (
+                          <div ref={menuRef} className="invoice-menu absolute right-0 mt-2 w-40 bg-white border border-gray-200 shadow-lg rounded-lg overflow-hidden z-10">
+                            <button 
+                              onClick={() => handleEditInvoice(invoice)}
+                              className="w-full flex items-center space-x-2 text-left px-4 py-2 text-sm hover:bg-gray-50"
+                            >
+                              <Edit size={16} />
+                              <span>Edit Invoice</span>
+                            </button>
+                            <button 
+                              onClick={() => handleDeleteInvoice(invoice._id)}
+                              className="w-full flex items-center space-x-2 text-left px-4 py-2 text-sm hover:bg-gray-50 text-red-600"
+                            >
+                              <span>Delete</span>
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -321,7 +397,7 @@ export default function InvoicesPage() {
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
               <div className="bg-white p-6 rounded-lg shadow-lg w-[40rem]">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-lg font-bold">Create Invoice</h2>
+                  <h2 className="text-lg font-bold">{editingInvoice ? 'Edit Invoice' : 'Create Invoice'}</h2>
                   <button onClick={handleCloseModal} className="text-gray-500 hover:text-gray-700">
                     &times;
                   </button>
@@ -331,52 +407,50 @@ export default function InvoicesPage() {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700">Invoice Type</label>
-                        <select className="mt-1 p-2 w-full border rounded-lg bg-gray-100">
-                          <option value="">Select type</option>
-                          {invoiceTypes.map((type) => (
-                            <option key={type} value={type}>{type}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Supplier</label>
-                        <select className="mt-1 p-2 w-full border rounded-lg bg-gray-100">
-                          <option value="">Select supplier</option>
-                          {suppliers.map((sup) => (
-                            <option key={sup} value={sup}>{sup}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Amount</label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          placeholder="Enter amount"
+                        <select 
+                          name="type"
+                          value={formData.type}
+                          onChange={handleInputChange}
                           className="mt-1 p-2 w-full border rounded-lg bg-gray-100"
-                        />
+                          required
+                        >
+                          <option value="">Select type</option>
+                          <option value="REGULAR">Regular</option>
+                          <option value="PROFORMA">Proforma</option>
+                        </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">Issue Date</label>
+                        <label className="block text-sm font-medium text-gray-700">Purchase Order</label>
                         <input
-                          type="date"
+                          type="text"
+                          name="purchase_order"
+                          value={formData.purchase_order}
+                          onChange={handleInputChange}
+                          placeholder="Purchase order ID (optional)"
                           className="mt-1 p-2 w-full border rounded-lg bg-gray-100"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Due Date</label>
+                      <label className="block text-sm font-medium text-gray-700">Total Value</label>
                       <input
-                        type="date"
+                        type="number"
+                        name="total_value"
+                        value={formData.total_value}
+                        onChange={handleInputChange}
+                        step="0.01"
+                        placeholder="Enter total value"
                         className="mt-1 p-2 w-full border rounded-lg bg-gray-100"
+                        required
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Description</label>
+                      <label className="block text-sm font-medium text-gray-700">Notes</label>
                       <textarea
-                        placeholder="Enter invoice description"
+                        name="notes"
+                        value={formData.notes}
+                        onChange={handleInputChange}
+                        placeholder="Enter invoice notes (optional)"
                         className="mt-1 p-2 w-full border rounded-lg bg-gray-100"
                         rows={3}
                       ></textarea>
@@ -391,9 +465,10 @@ export default function InvoicesPage() {
                       </button>
                       <button
                         type="submit"
-                        className="px-4 py-2 bg-[var(--primary)] text-white rounded-lg"
+                        disabled={loading}
+                        className="px-4 py-2 bg-[var(--primary)] text-white rounded-lg disabled:opacity-50"
                       >
-                        Create Invoice
+                        {loading ? 'Saving...' : (editingInvoice ? 'Update Invoice' : 'Create Invoice')}
                       </button>
                     </div>
                   </div>

@@ -21,11 +21,18 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useSelector } from "react-redux";
-import type { RootState } from "../../../store/store";
+import { useSelector, useDispatch } from "react-redux";
+import { useEffect } from "react";
+import type { RootState, AppDispatch } from "../../../store/store";
+import { fetchDashboardStats } from "../../../store/slices/dashboardSlice";
 
 export default function Dashboard() {
-  const dashboard = useSelector((state: RootState) => state.dashboard);
+  const dispatch = useDispatch<AppDispatch>();
+  const { totalProducts, lowStockItems, expiringSoon, activities, topProducts, loading, error } = useSelector((state: RootState) => state.dashboard);
+
+  useEffect(() => {
+    dispatch(fetchDashboardStats());
+  }, [dispatch]);
 
   return (
     <div className="flex h-screen">
@@ -160,9 +167,9 @@ export default function Dashboard() {
               <h1 className="text-2xl font-bold">Dashboard</h1>
               <p className="text-gray-500">Inventory Management overview</p>
             </div>
-            <button className="px-5 py-2 bg-[var(--primary)] text-white rounded-lg shadow hover:opacity-90">
+            <Link href="/admin/reports" className="px-5 py-2 bg-[var(--primary)] text-white rounded-lg shadow hover:opacity-90 inline-block">
               Generate Report
-            </button>
+            </Link>
           </div>
 
           
@@ -170,7 +177,7 @@ export default function Dashboard() {
             <div className="bg-white rounded-2xl shadow p-6 flex items-center justify-between">
               <div>
                 <h2 className="text-gray-500 font-medium">Total products</h2>
-                <p className="text-3xl font-bold text-gray-800">{dashboard.totalProducts}</p>
+                <p className="text-3xl font-bold text-gray-800">{loading ? '...' : totalProducts}</p>
                 <p className="text-gray-400 text-sm">~ Active stock items</p>
               </div>
               <div className="p-3 bg-blue-100 rounded-full">
@@ -181,7 +188,7 @@ export default function Dashboard() {
             <div className="bg-white rounded-2xl shadow p-6 flex items-center justify-between">
               <div>
                 <h2 className="text-gray-500 font-medium">Low Stock Items</h2>
-                <p className="text-3xl font-bold text-red-600">{dashboard.lowStockItems}</p>
+                <p className="text-3xl font-bold text-red-600">{loading ? '...' : lowStockItems}</p>
                 <p className="text-gray-400 text-sm">~ Below reorder point</p>
               </div>
               <div className="p-3 bg-red-100 rounded-full">
@@ -192,7 +199,7 @@ export default function Dashboard() {
             <div className="bg-white rounded-2xl shadow p-6 flex items-center justify-between">
               <div>
                 <h2 className="text-gray-500 font-medium">Expiring Soon</h2>
-                <p className="text-3xl font-bold text-orange-600">{dashboard.expiringSoon}</p>
+                <p className="text-3xl font-bold text-orange-600">{loading ? '...' : expiringSoon}</p>
                 <p className="text-gray-400 text-sm">~ Within 60 days</p>
               </div>
               <div className="p-3 bg-orange-100 rounded-full">
@@ -208,38 +215,48 @@ export default function Dashboard() {
                 <Activity className="mr-2" size={20} /> Recent Activities
               </h2>
               <ul className="space-y-4">
-                {dashboard.activities.map((activity) => (
-                  <li
-                    key={activity.id}
-                    className="flex justify-between items-center bg-[var(--input-field)] rounded-lg p-4"
-                  >
-                    <div className="flex items-center space-x-3">
-                      {activity.type === "in" && (
-                        <span className="bg-green-100 text-green-600 p-2 rounded-full">
-                          <TrendingUp size={20} />
-                        </span>
-                      )}
-                      {activity.type === "out" && (
-                        <span className="bg-orange-100 text-orange-600 p-2 rounded-full">
-                          <TrendingDown size={20} />
-                        </span>
-                      )}
-                      {activity.type === "low" && (
-                        <span className="bg-yellow-100 text-yellow-600 p-2 rounded-full">
-                          <AlertTriangle size={20} />
-                        </span>
-                      )}
-                      <div>
-                        <p className="font-semibold">{activity.title}</p>
-                        <p className="text-sm text-gray-500">{activity.description}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-sm">{activity.code}</p>
-                      <p className="text-xs text-gray-500">{activity.time}</p>
-                    </div>
+                {loading ? (
+                  <li className="flex justify-center items-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[var(--primary)]"></div>
                   </li>
-                ))}
+                ) : error ? (
+                  <li className="text-center py-8 text-red-500">Error: {error}</li>
+                ) : activities.length === 0 ? (
+                  <li className="text-center py-8 text-gray-500">No recent activities</li>
+                ) : (
+                  activities.map((activity) => (
+                    <li
+                      key={activity.id}
+                      className="flex justify-between items-center bg-[var(--input-field)] rounded-lg p-4"
+                    >
+                      <div className="flex items-center space-x-3">
+                        {activity.type === "in" && (
+                          <span className="bg-green-100 text-green-600 p-2 rounded-full">
+                            <TrendingUp size={20} />
+                          </span>
+                        )}
+                        {activity.type === "out" && (
+                          <span className="bg-orange-100 text-orange-600 p-2 rounded-full">
+                            <TrendingDown size={20} />
+                          </span>
+                        )}
+                        {activity.type === "low" && (
+                          <span className="bg-yellow-100 text-yellow-600 p-2 rounded-full">
+                            <AlertTriangle size={20} />
+                          </span>
+                        )}
+                        <div>
+                          <p className="font-semibold">{activity.title}</p>
+                          <p className="text-sm text-gray-500">{activity.description}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-sm">{activity.code}</p>
+                        <p className="text-xs text-gray-500">{activity.time}</p>
+                      </div>
+                    </li>
+                  ))
+                )}
               </ul>
             </div>
 
@@ -249,26 +266,39 @@ export default function Dashboard() {
                 <Package className="mr-2" size={20} /> Top Products
               </h2>
               <ul className="space-y-4">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <li key={i} className="space-y-1">
-                    <div className="flex justify-between items-center">
-                      <p className="font-medium">Paracetamol 500mg</p>
-                      <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
-                        1250
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-xs text-gray-500">
-                      <p>Issued: 450</p>
-                      <p>125,000 RWF</p>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-[var(--primary)] h-2 rounded-full"
-                        style={{ width: "70%" }}
-                      ></div>
-                    </div>
+                {loading ? (
+                  <li className="flex justify-center items-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[var(--primary)]"></div>
                   </li>
-                ))}
+                ) : error ? (
+                  <li className="text-center py-8 text-red-500">Error loading products</li>
+                ) : topProducts.length === 0 ? (
+                  <li className="text-center py-8 text-gray-500">No products found</li>
+                ) : (
+                  topProducts.map((product, i) => {
+                    const utilizationRate = product.quantity > 0 ? (product.issued / product.quantity) * 100 : 0;
+                    return (
+                      <li key={i} className="space-y-1">
+                        <div className="flex justify-between items-center">
+                          <p className="font-medium">{product.name}</p>
+                          <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
+                            {product.balance}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-xs text-gray-500">
+                          <p>Issued: {product.issued}</p>
+                          <p>{product.value.toLocaleString()} RWF</p>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div
+                            className="bg-[var(--primary)] h-2 rounded-full"
+                            style={{ width: `${Math.min(utilizationRate, 100)}%` }}
+                          ></div>
+                        </div>
+                      </li>
+                    );
+                  })
+                )}
               </ul>
             </div>
           </div>

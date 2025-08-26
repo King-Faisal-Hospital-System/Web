@@ -21,18 +21,12 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState, AppDispatch } from "@/store/store";
+import { fetchPayments, createPayment, updatePayment, deletePayment, Payment } from "@/store/slices/paymentSlice";
+import { fetchInvoices } from "@/store/slices/invoiceSlice";
 
 
-interface Payment {
-  id: string;
-  transaction: string;
-  invoice: string;
-  supplier: string;
-  amount: string;
-  method: string;
-  date: string;
-  status: string;
-}
 
 
 interface PaymentMethod {
@@ -44,15 +38,8 @@ interface PaymentMethod {
 }
 
 
-const paymentsData: Payment[] = [
-  { id: "PO-2024-001", transaction: "001", invoice: "INV-2024-001", supplier: "PharmaSupply Ltd", amount: "250,000 RWF", method: "Mobile Money", date: "2024-01-25", status: "completed" },
-  { id: "PO-2024-001", transaction: "002", invoice: "INV-2024-001", supplier: "PharmaSupply Ltd", amount: "250,000 RWF", method: "Mobile Money", date: "2024-01-25", status: "processing" },
-  { id: "PO-2024-001", transaction: "003", invoice: "INV-2024-001", supplier: "PharmaSupply Ltd", amount: "250,000 RWF", method: "Mobile Money", date: "2024-01-25", status: "completed" },
-  { id: "PO-2024-001", transaction: "004", invoice: "INV-2024-001", supplier: "PharmaSupply Ltd", amount: "250,000 RWF", method: "Mobile Money", date: "2024-01-25", status: "completed" },
-  { id: "PO-2024-001", transaction: "005", invoice: "INV-2024-001", supplier: "PharmaSupply Ltd", amount: "250,000 RWF", method: "Mobile Money", date: "2024-01-25", status: "completed" },
-];
 
-const paymentMethodsData: PaymentMethod[] = [
+const initialPaymentMethodsData: PaymentMethod[] = [
   { name: "MTN Mobile Money", account: "**** **** 224", processingTime: "Processing Instant Fee 1%", status: "Active" },
   { name: "Airtel Money", account: "**** **** 234", processingTime: "Processing Instant Fee 1%", status: "Active" },
   { name: "Bank of Kigali", account: "**** **** 234", processingTime: "Processing 1-2 business days Fee 1%", status: "Active" },
@@ -101,27 +88,35 @@ const PaymentActionMenu = ({ paymentId, isOpen, onClose }: { paymentId: string; 
 };
 
 export default function PaymentsPage() {
+  const dispatch = useDispatch<AppDispatch>();
+  const { payments, loading, error } = useSelector((state: RootState) => state.payments);
+  const { invoices } = useSelector((state: RootState) => state.invoices);
+  
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [activeTab, setActiveTab] = useState<"history" | "methods">("history");
   const [openPaymentId, setOpenPaymentId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
+  const [editingPayment, setEditingPayment] = useState<Payment | null>(null);
+  const [paymentMethodsData, setPaymentMethodsData] = useState<PaymentMethod[]>(initialPaymentMethodsData);
   const [formData, setFormData] = useState({
     invoice: "",
-    supplier: "",
     amount: 0,
     method: "",
-    date: "",
     notes: "",
   });
 
-  const filteredPayments = paymentsData.filter(
+  useEffect(() => {
+    dispatch(fetchPayments());
+    dispatch(fetchInvoices());
+  }, [dispatch]);
+
+  const filteredPayments = payments.filter(
     (payment) =>
-      (statusFilter === "All" || payment.status === statusFilter) &&
-      (payment.id.toLowerCase().includes(search.toLowerCase()) ||
-        payment.supplier.toLowerCase().includes(search.toLowerCase()) ||
-        payment.transaction.toLowerCase().includes(search.toLowerCase()))
+      (statusFilter === "All" || payment.status.toLowerCase() === statusFilter.toLowerCase()) &&
+      (payment._id.toLowerCase().includes(search.toLowerCase()) ||
+        payment.method.toLowerCase().includes(search.toLowerCase()))
   );
 
   const handleMenuToggle = (id: string) => {
@@ -129,25 +124,52 @@ export default function PaymentsPage() {
   };
 
   const handleNewPayment = () => {
-    setFormData({ invoice: "", supplier: "", amount: 0, method: "", date: "", notes: "" });
+    setFormData({ invoice: "", amount: 0, method: "", notes: "" });
     setSelectedMethod(null);
+    setEditingPayment(null);
     setIsModalOpen(true);
   };
 
   const handleConfigureMethod = (method: PaymentMethod) => {
     setSelectedMethod({ ...method, notes: method.notes || "" }); 
-    setFormData({ invoice: "", supplier: "", amount: 0, method: "", date: "", notes: "" }); 
+    setFormData({ invoice: "", amount: 0, method: "", notes: "" }); 
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedMethod(null);
-    setFormData({ invoice: "", supplier: "", amount: 0, method: "", date: "", notes: "" });
+    setEditingPayment(null);
+    setFormData({ invoice: "", amount: 0, method: "", notes: "" });
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    if (selectedMethod) {
+     
+      setPaymentMethodsData(prevMethods => 
+        prevMethods.map(method => 
+          method.name === selectedMethod.name 
+            ? { ...selectedMethod }
+            : method
+        )
+      );
+      
+     
+      alert(`${selectedMethod.name} configuration updated successfully!`);
+    } else {
+      
+      try {
+        if (editingPayment) {
+          await dispatch(updatePayment({ id: editingPayment._id, ...formData }));
+        } else {
+          await dispatch(createPayment(formData));
+        }
+      } catch (error) {
+        console.error('Payment operation failed:', error);
+      }
+    }
     
     handleCloseModal();
   };
@@ -164,16 +186,35 @@ export default function PaymentsPage() {
     }
   };
 
-  const paymentMethods = paymentMethodsData.map((method) => method.name);
-  const invoices = [...new Set(paymentsData.map((payment) => payment.invoice))];
-  const suppliers = [...new Set(paymentsData.map((payment) => payment.supplier))];
+  const paymentMethods = ["MOMO", "AIRTEL_MONEY", "BANK CARD", "CASHLESS"];
+  
+  const handleEditPayment = (payment: Payment) => {
+    setEditingPayment(payment);
+    setFormData({
+      invoice: payment.invoice,
+      amount: payment.amount,
+      method: payment.method,
+      notes: payment.notes || "",
+    });
+    setIsModalOpen(true);
+  };
+  
+  const handleDeletePayment = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this payment?')) {
+      try {
+        await dispatch(deletePayment(id));
+      } catch (error) {
+        console.error('Delete payment failed:', error);
+      }
+    }
+  };
 
   return (
     <div className="flex h-screen">
       {/* sidebar */}
       <aside className="w-64 bg-white shadow-sm flex flex-col justify-between">
         <div>
-          <div className="flex items-center justify-center h-20">
+          <div className="flex items-center justify-start h-20">
             <Image src="/logo.png" alt="Logo" width={80} height={80} />
           </div>
           <nav className="mt-6">
@@ -284,8 +325,8 @@ export default function PaymentsPage() {
                 aria-label="Filter by status"
               >
                 <option value="All">All Status</option>
-                <option value="completed">Completed</option>
-                <option value="processing">Processing</option>
+                <option value="COMPLETED">Completed</option>
+                <option value="PROCESSING">Processing</option>
               </select>
             </div>
           </div>
@@ -309,20 +350,38 @@ export default function PaymentsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredPayments.length > 0 ? (
+                  {loading ? (
+                    <tr>
+                      <td colSpan={9} className="py-8 text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[var(--primary)] mx-auto"></div>
+                      </td>
+                    </tr>
+                  ) : error ? (
+                    <tr>
+                      <td colSpan={9} className="py-8 text-center text-red-500">
+                        Error: {error}
+                      </td>
+                    </tr>
+                  ) : filteredPayments.length === 0 ? (
+                    <tr>
+                      <td colSpan={9} className="py-8 text-center text-gray-500">
+                        No payments found
+                      </td>
+                    </tr>
+                  ) : (
                     filteredPayments.map((payment) => (
-                      <tr key={payment.id + payment.transaction} className="border-t border-gray-100" role="row">
-                        <td className="py-4" role="cell">{payment.id}</td>
-                        <td className="py-4" role="cell">{payment.transaction}</td>
-                        <td className="py-4" role="cell">{payment.invoice}</td>
-                        <td className="py-4 font-semibold" role="cell">{payment.supplier}</td>
-                        <td className="py-4" role="cell">{payment.amount}</td>
+                      <tr key={payment._id} className="border-t border-gray-100" role="row">
+                        <td className="py-4" role="cell">PAY-{payment._id.slice(-6)}</td>
+                        <td className="py-4" role="cell">{payment._id.slice(-8)}</td>
+                        <td className="py-4" role="cell">INV-{payment.invoice.slice(-6)}</td>
+                        <td className="py-4 font-semibold" role="cell">N/A</td>
+                        <td className="py-4" role="cell">{payment.amount.toLocaleString()} RWF</td>
                         <td className="py-4" role="cell">{payment.method}</td>
-                        <td className="py-4" role="cell">{payment.date}</td>
+                        <td className="py-4" role="cell">{new Date(payment.createdAt).toLocaleDateString()}</td>
                         <td className="py-4" role="cell">
                           <span
                             className={`px-3 py-1 rounded-md text-white text-xs ${
-                              payment.status === "completed" ? "bg-green-600" : "bg-orange-500"
+                              payment.status === "COMPLETED" ? "bg-green-600" : "bg-orange-500"
                             }`}
                           >
                             {payment.status}
@@ -330,26 +389,32 @@ export default function PaymentsPage() {
                         </td>
                         <td className="py-4 text-right relative" role="cell">
                           <button
-                            onClick={() => handleMenuToggle(payment.id + payment.transaction)}
+                            onClick={() => handleMenuToggle(payment._id)}
                             className="menu-button inline-flex items-center justify-center h-8 w-8 rounded-full hover:bg-gray-100"
-                            aria-label={`Actions for ${payment.id} transaction ${payment.transaction}`}
+                            aria-label={`Actions for payment ${payment._id}`}
                           >
                             <MoreHorizontal size={18} />
                           </button>
-                          <PaymentActionMenu
-                            paymentId={payment.id + payment.transaction}
-                            isOpen={openPaymentId === payment.id + payment.transaction}
-                            onClose={() => setOpenPaymentId(null)}
-                          />
+                          {openPaymentId === payment._id && (
+                            <div className="invoice-menu absolute right-0 mt-2 w-40 bg-white border border-gray-200 shadow-lg rounded-lg overflow-hidden z-10">
+                              <button 
+                                onClick={() => handleEditPayment(payment)}
+                                className="w-full flex items-center space-x-2 text-left px-4 py-2 text-sm hover:bg-gray-50"
+                              >
+                                <Eye size={16} />
+                                <span>Edit</span>
+                              </button>
+                              <button 
+                                onClick={() => handleDeletePayment(payment._id)}
+                                className="w-full flex items-center space-x-2 text-left px-4 py-2 text-sm hover:bg-gray-50 text-red-600"
+                              >
+                                <span>Delete</span>
+                              </button>
+                            </div>
+                          )}
                         </td>
                       </tr>
                     ))
-                  ) : (
-                    <tr>
-                      <td colSpan={9} className="py-4 text-center text-gray-500" role="cell">
-                        No payments found.
-                      </td>
-                    </tr>
                   )}
                 </tbody>
               </table>
@@ -454,35 +519,22 @@ export default function PaymentsPage() {
                       </>
                     ) : (
                       <>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">Invoice</label>
-                            <select
-                              name="invoice"
-                              value={formData.invoice}
-                              onChange={handleChange}
-                              className="mt-1 p-2 w-full border rounded-lg bg-gray-100"
-                            >
-                              <option value="">Select invoice</option>
-                              {invoices.map((invoice) => (
-                                <option key={invoice} value={invoice}>{invoice}</option>
-                              ))}
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">Supplier</label>
-                            <select
-                              name="supplier"
-                              value={formData.supplier}
-                              onChange={handleChange}
-                              className="mt-1 p-2 w-full border rounded-lg bg-gray-100"
-                            >
-                              <option value="">Select supplier</option>
-                              {suppliers.map((sup) => (
-                                <option key={sup} value={sup}>{sup}</option>
-                              ))}
-                            </select>
-                          </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">Invoice</label>
+                          <select
+                            name="invoice"
+                            value={formData.invoice}
+                            onChange={handleChange}
+                            className="mt-1 p-2 w-full border rounded-lg bg-gray-100"
+                            required
+                          >
+                            <option value="">Select invoice</option>
+                            {invoices.map((invoice) => (
+                              <option key={invoice._id} value={invoice._id}>
+                                INV-{invoice._id.slice(-6)} - {invoice.total_value.toLocaleString()} RWF
+                              </option>
+                            ))}
+                          </select>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                           <div>
@@ -495,6 +547,7 @@ export default function PaymentsPage() {
                               onChange={handleChange}
                               placeholder="Enter amount"
                               className="mt-1 p-2 w-full border rounded-lg bg-gray-100"
+                              required
                             />
                           </div>
                           <div>
@@ -504,23 +557,14 @@ export default function PaymentsPage() {
                               value={formData.method}
                               onChange={handleChange}
                               className="mt-1 p-2 w-full border rounded-lg bg-gray-100"
+                              required
                             >
                               <option value="">Select method</option>
                               {paymentMethods.map((method) => (
-                                <option key={method} value={method}>{method}</option>
+                                <option key={method} value={method}>{method.replace('_', ' ')}</option>
                               ))}
                             </select>
                           </div>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700">Date</label>
-                          <input
-                            type="date"
-                            name="date"
-                            value={formData.date}
-                            onChange={handleChange}
-                            className="mt-1 p-2 w-full border rounded-lg bg-gray-100"
-                          />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700">Notes</label>
@@ -547,7 +591,7 @@ export default function PaymentsPage() {
                         type="submit"
                         className="px-4 py-2 bg-[var(--primary)] text-white rounded-lg"
                       >
-                        {selectedMethod ? "Save Configuration" : "Add Payment"}
+                        {loading ? 'Saving...' : selectedMethod ? "Save Configuration" : (editingPayment ? "Update Payment" : "Add Payment")}
                       </button>
                     </div>
                   </div>
