@@ -15,7 +15,7 @@ export interface Stock {
   status: "GOOD" | "LOW";
 }
 
-const API_URL = "http://localhost:5000/api/stocks";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/stocks";
 
 // Fetch all stocks
 export const fetchAllStocks = async (): Promise<Stock[]> => {

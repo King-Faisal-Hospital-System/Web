@@ -62,7 +62,16 @@ export const fetchReports = createAsyncThunk(
   'reports/fetchReports',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await fetch('http://localhost:5000/api/reports');
+     const response = await fetch(
+  `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/reports`,
+  {
+    method: 'GET',
+    credentials: 'include', 
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  }
+);
       const data = await response.json();
       
       if (!response.ok) {
@@ -80,13 +89,17 @@ export const generateReport = createAsyncThunk(
   'reports/generateReport',
   async (reportType: 'INVENTORY_REPORT' | 'EXPIRATION_REPORT' | 'SUPPLIER_REPORT', { rejectWithValue }) => {
     try {
-      const response = await fetch('http://localhost:5000/api/reports', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ type: reportType }),
-      });
+      const response = await fetch(
+  `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/reports`,
+  {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include', 
+    body: JSON.stringify({ type: reportType }),
+  }
+);
       
       const data = await response.json();
       
@@ -105,13 +118,16 @@ export const generateSupplierReport = createAsyncThunk(
   'reports/generateSupplierReport',
   async (supplierId: string, { rejectWithValue }) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/reports/supplier/${supplierId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      
+      const response = await fetch(
+  `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/reports/supplier/${supplierId}`,
+  {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+  }
+);
       const data = await response.json();
       
       if (!response.ok) {
@@ -129,7 +145,16 @@ export const getReport = createAsyncThunk(
   'reports/getReport',
   async (reportId: string, { rejectWithValue }) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/reports/${reportId}`);
+      const response = await fetch(
+  `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/reports/${reportId}`,
+  {
+    method: 'GET',
+    credentials: 'include', 
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  }
+);
       const data = await response.json();
       
       if (!response.ok) {
@@ -151,8 +176,25 @@ export const downloadReport = createAsyncThunk(
       const filename = fileUrl.split('/').pop() || 'report.pdf';
       
       // Fetch the PDF file
-      const response = await fetch(`http://localhost:5000${fileUrl}`);
-      
+     const response = await fetch(
+  `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}${fileUrl}`,
+  {
+    method: 'GET',
+    credentials: 'include', 
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  }
+);
+
+if (!response.ok) {
+  const errorData = await response.json();
+  throw new Error(errorData.message || 'Failed to fetch file');
+}
+
+const data = await response.json();
+return data;
+
       if (!response.ok) {
         return rejectWithValue('Failed to download report');
       }
@@ -183,7 +225,17 @@ export const fetchReportStats = createAsyncThunk(
   'reports/fetchReportStats',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await fetch('http://localhost:5000/api/reports/stats');
+      const response = await fetch(
+  `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/reports/stats`,
+  {
+    method: 'GET',
+    credentials: 'include', 
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  }
+);
+      
       const data = await response.json();
       
       if (!response.ok) {

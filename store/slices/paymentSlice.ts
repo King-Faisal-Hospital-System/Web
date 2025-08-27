@@ -27,54 +27,78 @@ const initialState: PaymentState = {
 };
 
 // Async thunks
+
 export const fetchPayments = createAsyncThunk(
   'payments/fetchPayments',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await fetch('http://localhost:5000/api/payments');
-      const data = await response.json();
-      
-      if (!data.success) {
-        return rejectWithValue(data.message);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/payments`,
+        {
+          method: 'GET',
+          credentials: 'include', 
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+     
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.message || 'Failed to fetch payments');
       }
+
+      const data = await response.json();
+
       
-      return data.data;
+      return data.data || data;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to fetch payments');
     }
   }
 );
 
+
 export const createPayment = createAsyncThunk(
   'payments/createPayment',
-  async (paymentData: {
-    invoice: string;
-    amount: number;
-    method: string;
-    notes?: string;
-  }, { rejectWithValue }) => {
+  async (
+    paymentData: {
+      invoice: string;
+      amount: number;
+      method: string;
+      notes?: string;
+    },
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await fetch('http://localhost:5000/api/payments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(paymentData),
-      });
-      
-      const data = await response.json();
-      
-      if (!data.success) {
-        return rejectWithValue(data.message);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/payments`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify(paymentData),
+        }
+      );
+
+     
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.message || 'Failed to create payment');
       }
+
+      const data = await response.json();
+
       
-      return data.data;
+      return data.data || data;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to create payment');
     }
   }
 );
-
 export const updatePayment = createAsyncThunk(
   'payments/updatePayment',
   async ({ id, ...updateData }: {
@@ -86,7 +110,7 @@ export const updatePayment = createAsyncThunk(
     notes?: string;
   }, { rejectWithValue }) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/payments/${id}`, {
+      const response = await fetch( `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/payments/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -111,7 +135,7 @@ export const deletePayment = createAsyncThunk(
   'payments/deletePayment',
   async (id: string, { rejectWithValue }) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/payments/${id}`, {
+      const response = await fetch( `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/payments/${id}`, {
         method: 'DELETE',
       });
       
