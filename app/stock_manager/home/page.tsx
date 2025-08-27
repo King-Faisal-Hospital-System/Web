@@ -29,7 +29,7 @@ import {
   recordStockCount
 } from "../../../store/slices/dashboardSlice";
 import { fetchSuppliers } from "../../../store/slices/supplierSlice";
-import { useTranslation } from "../../../lib/i18n";
+import { useLanguageContext } from "../../../components/LanguageProvider";
 
 interface FormData {
   productName: string;
@@ -73,7 +73,7 @@ export default function Dashboard() {
   const { totalProducts, lowStockItems, expiringSoon, loading, error } = useSelector((state: RootState) => state.dashboard);
   const { suppliers } = useSelector((state: RootState) => state.suppliers);
   const { currentLanguage } = useSelector((state: RootState) => state.language);
-  const { t } = useTranslation(currentLanguage);
+  const { t } = useLanguageContext();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAction, setSelectedAction] = useState<"receive" | "issue" | "adjust" | "count" | null>(null);

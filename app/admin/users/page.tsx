@@ -18,9 +18,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { fetchAllUsers, verifyUser, User } from "@/services/user.services";
+import { useLanguageContext } from "../../../components/LanguageProvider";
 
 export default function UserManagementPage() {
   const [users, setUsers] = useState<User[]>([]);
+  const { t } = useLanguageContext();
 
   const loadUsers = async () => {
     try {

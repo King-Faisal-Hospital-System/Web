@@ -17,7 +17,7 @@ import {
   ChevronDown,
   DollarSign,
 } from "lucide-react";
-import Link from "next/link";
+import { useLanguageContext } from "../../../components/LanguageProvider";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -25,10 +25,12 @@ import { toggleMenu, closeMenu } from "@/store/slices/reportMenuSlice";
 import { fetchReports, generateReport, fetchReportStats, Report } from "@/store/slices/reportSlice";
 import { fetchMedicines, Medicine } from "@/store/slices/inventorySlice";
 import { RootState, AppDispatch } from "@/store/store";
+import Link from "next/link";
 
 
 
 export default function ReportsPage() {
+  const { t } = useLanguageContext();
   const dispatch = useDispatch<AppDispatch>();
   const { reports, loading, error, generatingReport, stats, loadingStats } = useSelector((state: RootState) => state.reports);
   const { medicines } = useSelector((state: RootState) => state.inventory);

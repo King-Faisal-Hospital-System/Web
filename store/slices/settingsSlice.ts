@@ -34,6 +34,7 @@ interface SystemStatus {
     date: string;
     time: string;
     status: string;
+    size?: string;
   };
   databaseSize: string;
   storageUsage: {
@@ -41,11 +42,22 @@ interface SystemStatus {
     total: number;
     status: string;
   };
+  collections?: number;
+  documents?: number;
+}
+
+interface BackupHistory {
+  fileName: string;
+  filePath: string;
+  size: string;
+  createdAt: string;
+  modifiedAt: string;
 }
 
 interface BackupStatus {
   configuration: BackupConfiguration;
   systemStatus: SystemStatus;
+  backupHistory?: BackupHistory[];
 }
 
 interface SettingsState {
@@ -140,6 +152,32 @@ export const initiateBackup = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || "Failed to initiate backup");
+    }
+  }
+);
+
+// Async thunk to get backup history
+export const fetchBackupHistory = createAsyncThunk(
+  "settings/fetchBackupHistory",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get("/settings/backup/history");
+      return response.data.history;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || "Failed to fetch backup history");
+    }
+  }
+);
+
+// Async thunk to delete backup
+export const deleteBackupFile = createAsyncThunk(
+  "settings/deleteBackup",
+  async (fileName: string, { rejectWithValue }) => {
+    try {
+      await api.delete(`/settings/backup/${fileName}`);
+      return fileName;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || "Failed to delete backup");
     }
   }
 );

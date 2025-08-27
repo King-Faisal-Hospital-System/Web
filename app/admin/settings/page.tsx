@@ -1,58 +1,28 @@
 "use client";
 
 import {
-  LayoutDashboard,
-  Package,
-  FileText,
-  Users,
-  Truck,
-  CreditCard,
-  Settings,
-  Headphones,
-  LogOut,
-  Bell,
-  Search,
-  
-  
+  Download,
+  Trash2,
+  RefreshCw,
+  CheckCircle,
+  AlertCircle,
+  Clock
 } from "lucide-react";
-import Link from "next/link";
-import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "../../../store/store";
-import { fetchUserSettings, updateUserSettings, fetchBackupStatus, initiateBackup, updatePersonalInfo, updatePreferences, updateNotifications, updateBackupConfig } from "../../../store/slices/settingsSlice";
-import { setLanguage, initializeLanguage } from "../../../store/slices/languageSlice";
-import { useTranslation } from "../../../lib/i18n";
+import { fetchUserSettings, updateUserSettings, fetchBackupStatus, initiateBackup, updatePersonalInfo, updatePreferences, updateNotifications, updateBackupConfig, fetchBackupHistory, deleteBackupFile } from "../../../store/slices/settingsSlice";
+import { setLanguage, initializeLanguage, fetchUserLanguage } from "../../../store/slices/languageSlice";
+import { useLanguageContext } from "../../../components/LanguageProvider";
+import { Sidebar } from "../../../components/Sidebar";
+import { Header } from "../../../components/Header";
 
-const SidebarNavItem = ({
-  href,
-  icon: Icon,
-  label,
-  active = false,
-}: {
-  href: string;
-  icon: React.ElementType;
-  label: string;
-  active?: boolean;
-}) => (
-  <li>
-    <Link
-      href={href}
-      className={`flex items-center space-x-3 rounded-lg px-3 py-2 ${
-        active ? "bg-[var(--primary)] text-white" : "hover:bg-[var(--input-field)]"
-      }`}
-    >
-      <Icon size={20} />
-      <span>{label}</span>
-    </Link>
-  </li>
-);
 
 export default function SettingsPage() {
   const dispatch = useDispatch<AppDispatch>();
   const { personalInfo, preferences, notifications, backup, backupConfig, loading, error, saving, backupLoading } = useSelector((state: RootState) => state.settings);
   const { currentLanguage } = useSelector((state: RootState) => state.language);
-  const { t } = useTranslation(currentLanguage);
+  const { t } = useLanguageContext();
 
   const [activeTab, setActiveTab] = useState<"general" | "backup">("general");
   const [hasChanges, setHasChanges] = useState(false);
@@ -61,6 +31,7 @@ export default function SettingsPage() {
     dispatch(initializeLanguage());
     dispatch(fetchUserSettings());
     dispatch(fetchBackupStatus());
+    dispatch(fetchBackupHistory());
   }, [dispatch]);
 
   const handlePersonalInfoChange = (field: string, value: string) => {
@@ -71,6 +42,7 @@ export default function SettingsPage() {
   const handlePreferencesChange = (field: string, value: string) => {
     dispatch(updatePreferences({ [field]: value }));
     if (field === 'language') {
+      // Update language immediately in Redux store
       dispatch(setLanguage(value));
     }
     setHasChanges(true);
@@ -89,6 +61,10 @@ export default function SettingsPage() {
   const handleSaveChanges = async () => {
     try {
       await dispatch(updateUserSettings({ personalInfo, preferences, notifications, backupConfig }));
+      // After saving settings, fetch the updated language from backend to ensure sync
+      if (preferences.language) {
+        dispatch(fetchUserLanguage());
+      }
       setHasChanges(false);
     } catch (error) {
       console.error('Failed to save settings:', error);
@@ -98,12 +74,33 @@ export default function SettingsPage() {
   const handleInitiateBackup = async () => {
     try {
       await dispatch(initiateBackup());
-      // Refresh backup status after initiating
+      // Refresh backup status and history after initiating
       setTimeout(() => {
         dispatch(fetchBackupStatus());
+        dispatch(fetchBackupHistory());
       }, 2000);
     } catch (error) {
       console.error('Failed to initiate backup:', error);
+    }
+  };
+
+  const handleDownloadBackup = (fileName: string) => {
+    const downloadUrl = `http://localhost:5000/api/settings/backup/download/${fileName}`;
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = fileName;
+    link.click();
+  };
+
+  const handleDeleteBackup = async (fileName: string) => {
+    if (window.confirm(`Are you sure you want to delete backup: ${fileName}?`)) {
+      try {
+        await dispatch(deleteBackupFile(fileName));
+        dispatch(fetchBackupHistory());
+        dispatch(fetchBackupStatus());
+      } catch (error) {
+        console.error('Failed to delete backup:', error);
+      }
     }
   };
 
@@ -117,181 +114,118 @@ export default function SettingsPage() {
 
   return (
     <div className="flex h-screen">
-      {/* sidebar */}
-      <aside className="w-64 bg-white shadow-sm flex flex-col justify-between">
-        <div>
-          <div className="flex items-center justify-center h-20">
-            <Image src="/logo.png" alt="Logo" width={80} height={80} />
-          </div>
-          <nav className="mt-6">
-            <ul className="space-y-2 px-4">
-              <SidebarNavItem href="/admin/home" icon={LayoutDashboard} label="Dashboard" />
-              <SidebarNavItem href="/admin/inventory" icon={Package} label="Inventory" />
-              <SidebarNavItem href="/admin/reports" icon={FileText} label="Reports" />
-              <SidebarNavItem href="/admin/suppliers" icon={Truck} label="Suppliers" />
-              <SidebarNavItem href="/admin/invoices" icon={Users} label="Invoices" />
-              <SidebarNavItem href="/admin/payments" icon={CreditCard} label="Payments" />
-              <SidebarNavItem href="/admin/users" icon={Users} label="Users" />
-            </ul>
-          </nav>
-        </div>
-        <div className="px-4 pb-6 space-y-3">
-          <Link href="/admin/settings" className="flex items-center text-white  bg-[var(--primary)] space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2 cursor-pointer">
-            <Settings size={20} className="text-white" />
-            <span>Settings</span>
-          </Link>
-          <Link href="/admin/support" className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2 cursor-pointer">
-            <Headphones size={20} />
-            <span>Support</span>
-          </Link>
-          <Link href="/admin/logout" className="flex items-center space-x-3 hover:bg-red-100 text-red-600 rounded-lg px-3 py-2 cursor-pointer">
-            <LogOut size={20} />
-            <span>Logout</span>
-          </Link>
-        </div>
-      </aside>
-
+      <Sidebar />
       <div className="flex flex-col flex-1" style={{ background: "var(--background)" }}>
-        {/* header */}
-        <header className="flex justify-between items-center bg-white px-6 py-4 border-b border-gray-200">
-          <div className="relative w-72">
-            <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              size={20}
-            />
-            <input
-              type="text"
-              placeholder="Search..."
-              className="pl-10 pr-4 py-2 w-full rounded-lg bg-[var(--input-field)] outline-none focus:ring-2 focus:ring-[var(--primary)]"
-              aria-label="Search settings"
-            />
-          </div>
-          <div className="flex items-center space-x-4">
-            <Bell size={22} className="cursor-pointer text-red-500" aria-label="Notifications" />
-            <div className="flex items-center space-x-2">
-              <Image
-                src="/profile.jpg"
-                alt="User profile"
-                className="w-10 h-10 rounded-full"
-                width={40}
-                height={40}
-              />
-              <div>
-                <p className="text-sm font-semibold">Dr. Dylan</p>
-                <p className="text-xs text-gray-500">Pharmacist</p>
-              </div>
-            </div>
-          </div>
-        </header>
+        <Header />
 
         {/*body */}
         <main className="flex-1 p-6 overflow-y-auto">
           <div className="max-w-4xl mx-auto">
             <div className="flex justify-between items-center mb-8">
               <div>
-                <h1 className="text-2xl font-bold">{t('settings.title')}</h1>
-                <p className="text-gray-500 mt-1">Configure Systems preferences, alerts and security</p>
+                <h1 className="text-2xl font-bold">{t('Settings')}</h1>
+                <p className="text-gray-500 mt-1">{t('Configure system preferences, alerts and security')}</p>
               </div>
               <button
                 onClick={handleSaveChanges}
                 disabled={!hasChanges || saving}
                 className={`px-6 py-2 bg-[var(--primary)] text-white rounded-lg hover:opacity-90 shadow disabled:opacity-50`}
               >
-                {saving ? t('common.loading') : t('settings.saveChanges')}
+                {saving ? t('Loading') : t('Save Changes')}
               </button>
             </div>
 
-          <div className="bg-white px-6 py-4 border-b border-gray-200">
-            <div className="flex space-x-4 mb-4">
-              <button
-                onClick={() => setActiveTab("general")}
-                className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-                  activeTab === "general"
-                    ? "bg-[var(--primary)] text-white shadow"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                {t('settings.general')}
-              </button>
-              <button
-                onClick={() => setActiveTab("backup")}
-                className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-                  activeTab === "backup"
-                    ? "bg-[var(--primary)] text-white shadow"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                {t('settings.backup')}
-              </button>
-            </div>
-          </div>
-
-          {activeTab === "general" ? (
-            <div>
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mt-4">
-                <h2 className="text-lg font-semibold mb-5">{t('settings.personalInfo')}</h2>
-                {loading ? (
-                  <div className="flex justify-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[var(--primary)]"></div>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">{t('settings.name')}</label>
-                      <input
-                        type="text"
-                        value={personalInfo.name || 'Dr. Dylan'}
-                        onChange={(e) => handlePersonalInfoChange('name', e.target.value)}
-                        className="mt-1 p-2 w-full border rounded-md bg-gray-100 focus:ring-2 focus:ring-[var(--primary)]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">{t('settings.email')}</label>
-                      <input
-                        type="email"
-                        value={personalInfo.email || 'dr.dylan@kfh.rw'}
-                        onChange={(e) => handlePersonalInfoChange('email', e.target.value)}
-                        className="mt-1 p-2 w-full border rounded-md bg-gray-100 focus:ring-2 focus:ring-[var(--primary)]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">{t('settings.phone')}</label>
-                      <input
-                        type="text"
-                        value={personalInfo.phone || '+250 788 123 456'}
-                        onChange={(e) => handlePersonalInfoChange('phone', e.target.value)}
-                        className="mt-1 p-2 w-full border rounded-md bg-gray-100 focus:ring-2 focus:ring-[var(--primary)]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">{t('settings.role')}</label>
-                      <input
-                        type="text"
-                        value={personalInfo.role || 'Pharmacist'}
-                        className="mt-1 p-2 w-full border rounded-md bg-gray-200 focus:ring-2 focus:ring-[var(--primary)]"
-                        readOnly
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">{t('settings.currency')}</label>
-                      <select
-                        value={preferences.currency}
-                        onChange={(e) => handlePreferencesChange('currency', e.target.value)}
-                        className="mt-1 p-2 w-full border rounded-md bg-gray-100 focus:ring-2 focus:ring-[var(--primary)]"
-                      >
-                        <option value="RWF">Rwandan Franc (RWF)</option>
-                        <option value="USD">US Dollar (USD)</option>
-                        <option value="EUR">Euro (EUR)</option>
-                      </select>
-                    </div>
-                  </div>
-                )}
+            <div className="bg-white px-6 py-4 border-b border-gray-200">
+              <div className="flex space-x-4 mb-4">
+                <button
+                  onClick={() => setActiveTab("general")}
+                  className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+                    activeTab === "general"
+                      ? "bg-[var(--primary)] text-white shadow"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  {t('General')}
+                </button>
+                <button
+                  onClick={() => setActiveTab("backup")}
+                  className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+                    activeTab === "backup"
+                      ? "bg-[var(--primary)] text-white shadow"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  {t('Backup')}
+                </button>
               </div>
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mt-4">
-                <h2 className="text-lg font-semibold mb-5">Regional Settings</h2>
+            </div>
+
+            {activeTab === "general" ? (
+              <div>
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mt-4">
+                  <h2 className="text-lg font-semibold mb-5">{t('Personal Information')}</h2>
+                  {loading ? (
+                    <div className="flex justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[var(--primary)]"></div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">{t('Name')}</label>
+                        <input
+                          type="text"
+                          value={personalInfo.name || 'Dr. Dylan'}
+                          onChange={(e) => handlePersonalInfoChange('name', e.target.value)}
+                          className="mt-1 p-2 w-full border rounded-md bg-gray-100 focus:ring-2 focus:ring-[var(--primary)]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">{t('Email')}</label>
+                        <input
+                          type="email"
+                          value={personalInfo.email || 'dr.dylan@kfh.rw'}
+                          onChange={(e) => handlePersonalInfoChange('email', e.target.value)}
+                          className="mt-1 p-2 w-full border rounded-md bg-gray-100 focus:ring-2 focus:ring-[var(--primary)]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">{t('Phone')}</label>
+                        <input
+                          type="text"
+                          value={personalInfo.phone || '+250 788 123 456'}
+                          onChange={(e) => handlePersonalInfoChange('phone', e.target.value)}
+                          className="mt-1 p-2 w-full border rounded-md bg-gray-100 focus:ring-2 focus:ring-[var(--primary)]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">{t('Role')}</label>
+                        <input
+                          type="text"
+                          value={personalInfo.role || 'Pharmacist'}
+                          className="mt-1 p-2 w-full border rounded-md bg-gray-200 focus:ring-2 focus:ring-[var(--primary)]"
+                          readOnly
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">{t('Currency')}</label>
+                        <select
+                          value={preferences.currency}
+                          onChange={(e) => handlePreferencesChange('currency', e.target.value)}
+                          className="mt-1 p-2 w-full border rounded-md bg-gray-100 focus:ring-2 focus:ring-[var(--primary)]"
+                        >
+                          <option value="RWF">Rwandan Franc (RWF)</option>
+                          <option value="USD">US Dollar (USD)</option>
+                          <option value="EUR">Euro (EUR)</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mt-4">
+                <h2 className="text-lg font-semibold mb-5">{t('Regional Settings')}</h2>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">{t('settings.language')}</label>
+                    <label className="block text-sm font-medium text-gray-700">{t('Language')}</label>
                     <select
                       value={preferences.language}
                       onChange={(e) => handlePreferencesChange('language', e.target.value)}
@@ -304,7 +238,7 @@ export default function SettingsPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">{t('settings.timezone')}</label>
+                    <label className="block text-sm font-medium text-gray-700">{t('Timezone')}</label>
                     <select
                       value={preferences.timezone}
                       onChange={(e) => handlePreferencesChange('timezone', e.target.value)}
@@ -317,7 +251,7 @@ export default function SettingsPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">{t('settings.dateFormat')}</label>
+                    <label className="block text-sm font-medium text-gray-700">{t('Date Format')}</label>
                     <select
                       value={preferences.dateFormat}
                       onChange={(e) => handlePreferencesChange('dateFormat', e.target.value)}
@@ -393,23 +327,35 @@ export default function SettingsPage() {
                 <div className="flex gap-4 mt-6">
                   <button
                     onClick={handleInitiateBackup}
-                    disabled={!hasChanges || saving}
-                    className="px-6 py-2 bg-[var(--primary)] text-white rounded-lg hover:opacity-90 shadow disabled:opacity-50"
+                    disabled={backupLoading}
+                    className="px-6 py-2 bg-[var(--primary)] text-white rounded-lg hover:opacity-90 shadow disabled:opacity-50 flex items-center gap-2"
                   >
-                    {saving ? t('common.loading') : t('settings.saveChanges')}
+                    {backupLoading ? (
+                      <>
+                        <RefreshCw size={16} className="animate-spin" />
+                        {t('Creating Backup')}
+                      </>
+                    ) : (
+                      <>
+                        <Download size={16} />
+                        {t('Create Backup Now')}
+                      </>
+                    )}
                   </button>
                   
                   <button
-                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                    onClick={handleSaveChanges}
+                    disabled={!hasChanges || saving}
+                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50"
                   >
-                    Restore
+                    {saving ? t('Loading') : t('Save Changes')}
                   </button>
                 </div>
               </div>
               
               {/* System Status */}
               <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mt-4">
-                <h2 className="text-lg font-semibold mb-6">{t('settings.systemStatus')}</h2>
+                <h2 className="text-lg font-semibold mb-6">{t('System Status')}</h2>
                 
                 {backupLoading ? (
                   <div className="flex justify-center py-8">
@@ -420,15 +366,26 @@ export default function SettingsPage() {
                     {/* Last Backup */}
                     <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
                       <div className="flex items-center space-x-3">
-                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <CheckCircle className="w-5 h-5 text-green-500" />
                         <div>
-                          <p className="font-medium text-gray-900">Last Backup</p>
+                          <p className="font-medium text-gray-900">{t('Last Backup')}</p>
                           <p className="text-sm text-gray-600">
-                            {new Date(backup.systemStatus.lastBackup.date).toLocaleDateString()} • {backup.systemStatus.lastBackup.time}
+                            {backup.systemStatus.lastBackup.date !== 'Never' ? (
+                              `${new Date(backup.systemStatus.lastBackup.date).toLocaleDateString()} • ${backup.systemStatus.lastBackup.time}`
+                            ) : (
+                              t('No backups found')
+                            )}
                           </p>
+                          {backup.systemStatus.lastBackup.size && (
+                            <p className="text-xs text-gray-500">Size: {backup.systemStatus.lastBackup.size}</p>
+                          )}
                         </div>
                       </div>
-                      <span className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full font-medium">
+                      <span className={`px-3 py-1 text-sm rounded-full font-medium ${
+                        backup.systemStatus.lastBackup.status === 'Success' 
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
                         {backup.systemStatus.lastBackup.status}
                       </span>
                     </div>
@@ -440,6 +397,11 @@ export default function SettingsPage() {
                         <div>
                           <p className="font-medium text-gray-900">Database Size</p>
                           <p className="text-sm text-gray-600">{backup.systemStatus.databaseSize}</p>
+                          {backup.systemStatus.collections && (
+                            <p className="text-xs text-gray-500">
+                              {backup.systemStatus.collections} collections • {backup.systemStatus.documents} documents
+                            </p>
+                          )}
                         </div>
                       </div>
                       <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full font-medium">
@@ -456,6 +418,12 @@ export default function SettingsPage() {
                           <p className="text-sm text-gray-600">
                             {backup.systemStatus.storageUsage.used}% of {backup.systemStatus.storageUsage.total}GB used
                           </p>
+                          <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                            <div 
+                              className="bg-orange-500 h-2 rounded-full" 
+                              style={{ width: `${backup.systemStatus.storageUsage.used}%` }}
+                            ></div>
+                          </div>
                         </div>
                       </div>
                       <span className={`px-3 py-1 text-sm rounded-full font-medium ${
@@ -466,9 +434,57 @@ export default function SettingsPage() {
                         {backup.systemStatus.storageUsage.status}
                       </span>
                     </div>
+                    
+                    {/* Backup History */}
+                    {backup.backupHistory && backup.backupHistory.length > 0 && (
+                      <div className="mt-6">
+                        <h3 className="text-md font-semibold mb-4">Recent Backups</h3>
+                        <div className="space-y-2">
+                          {backup.backupHistory.map((backupItem: any, index: number) => (
+                            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <div className="flex items-center space-x-3">
+                                <Clock className="w-4 h-4 text-gray-500" />
+                                <div>
+                                  <p className="text-sm font-medium">{backupItem.fileName}</p>
+                                  <p className="text-xs text-gray-500">
+                                    {new Date(backupItem.createdAt).toLocaleString()}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <span className="text-xs text-gray-500">{backupItem.size}</span>
+                                <button 
+                                  onClick={() => handleDownloadBackup(backupItem.fileName)}
+                                  className="p-1 text-blue-500 hover:bg-blue-100 rounded"
+                                  title="Download backup"
+                                >
+                                  <Download size={14} />
+                                </button>
+                                <button 
+                                  onClick={() => handleDeleteBackup(backupItem.fileName)}
+                                  className="p-1 text-red-500 hover:bg-red-100 rounded"
+                                  title="Delete backup"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ) : (
-                  <p className="text-gray-500 text-center py-8">No system status available</p>
+                  <div className="text-center py-8">
+                    <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500">No system status available</p>
+                    <button 
+                      onClick={() => dispatch(fetchBackupStatus())}
+                      className="mt-2 px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                    >
+                      Refresh Status
+                    </button>
+                  </div>
                 )}
               </div>
             </div>

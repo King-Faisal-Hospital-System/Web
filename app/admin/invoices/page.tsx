@@ -27,6 +27,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "@/store/store";
 import { fetchInvoices, createInvoice, updateInvoice, deleteInvoice, Invoice } from "@/store/slices/invoiceSlice";
 import { fetchSuppliers } from "@/store/slices/supplierSlice";
+import { useLanguageContext } from "../../../components/LanguageProvider";
 
 export default function InvoicesPage() {
   const [search, setSearch] = useState("");
@@ -44,6 +45,7 @@ export default function InvoicesPage() {
 
   const { invoices, loading, error } = useSelector((state: RootState) => state.invoices);
   const { suppliers } = useSelector((state: RootState) => state.suppliers);
+  const { t } = useLanguageContext();
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {

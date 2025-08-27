@@ -25,10 +25,13 @@ import { useSelector, useDispatch } from "react-redux";
 import { useEffect } from "react";
 import type { RootState, AppDispatch } from "../../../store/store";
 import { fetchDashboardStats } from "../../../store/slices/dashboardSlice";
+import { useLanguageContext } from "../../../components/LanguageProvider";
+import { Sidebar } from "../../../components/Sidebar";
 
 export default function Dashboard() {
   const dispatch = useDispatch<AppDispatch>();
   const { totalProducts, lowStockItems, expiringSoon, activities, topProducts, loading, error } = useSelector((state: RootState) => state.dashboard);
+  const { t } = useLanguageContext();
 
   useEffect(() => {
     dispatch(fetchDashboardStats());
@@ -36,98 +39,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex h-screen">
-      {/* sidebar */}
-      
-      <aside className="w-64 bg-white shadow-sm flex flex-col justify-between">
-        <div>
-          <div className="flex items-center justify-normal h-20">
-            <Image src="/logo.png" alt="Logo" width={80} height={80} />
-          </div>
-
-          <nav className="mt-6">
-            <ul className="space-y-2 px-4">
-              <li>
-                <Link
-                  href="/admin/home"
-                  className="flex items-center space-x-3 bg-[var(--primary)] rounded-lg px-3 py-2 text-white"
-                >
-                  <LayoutDashboard size={20} />
-                  <span>Dashboard</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/admin/inventory"
-                  className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
-                >
-                  <Package size={20} />
-                  <span>Inventory</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/admin/reports"
-                  className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
-                >
-                  <FileText size={20} />
-                  <span>Reports</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/admin/suppliers"
-                  className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
-                >
-                  <Truck size={20} />
-                  <span>Suppliers</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/admin/invoices"
-                  className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
-                >
-                  <DollarSign size={20} />
-                  <span>Invoices</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/admin/payments"
-                  className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
-                >
-                  <CreditCard size={20} />
-                  <span>Payments</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/admin/users"
-                  className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
-                >
-                  <Users size={20} />
-                  <span>Users</span>
-                </Link>
-              </li>
-            </ul>
-          </nav>
-        </div>
-
-        <div className="px-4 pb-6 space-y-3">
-  <Link href="/admin/settings" className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2 cursor-pointer">
-    <Settings size={20} />
-    <span>Settings</span>
-  </Link>
-  <Link href="/admin/support" className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2 cursor-pointer">
-    <Headphones size={20} />
-    <span>Support</span>
-  </Link>
-  <Link href="/admin/logout" className="flex items-center space-x-3 hover:bg-red-100 text-red-600 rounded-lg px-3 py-2 cursor-pointer">
-    <LogOut size={20} />
-    <span>Logout</span>
-  </Link>
-</div>
-      </aside>
+      <Sidebar />
 
       
       <div className="flex flex-col flex-1">
@@ -137,7 +49,7 @@ export default function Dashboard() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
             <input
               type="text"
-              placeholder="Search..."
+              placeholder={t('Search')}
               className="pl-10 pr-4 py-2 w-full rounded-lg bg-[var(--input-field)] outline-none focus:ring-2 focus:ring-[var(--primary)]"
             />
           </div>
@@ -153,8 +65,8 @@ export default function Dashboard() {
                 height={80}
               />
               <div>
-                <p className="text-sm font-semibold">Dr. Dylan</p>
-                <p className="text-xs text-gray-500">Pharmacist</p>
+                <p className="text-sm font-semibold">{t('Dr. Dylan')}</p>
+                <p className="text-xs text-gray-500">{t('Pharmacist')}</p>
               </div>
             </div>
           </div>
@@ -164,11 +76,11 @@ export default function Dashboard() {
         <main className="flex-1 p-6 overflow-y-auto">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold">Dashboard</h1>
-              <p className="text-gray-500">Inventory Management overview</p>
+              <h1 className="text-2xl font-bold">{t('Dashboard')}</h1>
+              <p className="text-gray-500">{t('Inventory Management overview')}</p>
             </div>
             <Link href="/admin/reports" className="px-5 py-2 bg-[var(--primary)] text-white rounded-lg shadow hover:opacity-90 inline-block">
-              Generate Report
+              {t('Generate Report')}
             </Link>
           </div>
 
@@ -176,9 +88,9 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
             <div className="bg-white rounded-2xl shadow p-6 flex items-center justify-between">
               <div>
-                <h2 className="text-gray-500 font-medium">Total products</h2>
+                <h2 className="text-gray-500 font-medium">{t('Total Products')}</h2>
                 <p className="text-3xl font-bold text-gray-800">{loading ? '...' : totalProducts}</p>
-                <p className="text-gray-400 text-sm">~ Active stock items</p>
+                <p className="text-gray-400 text-sm">~ {t('Active stock items')}</p>
               </div>
               <div className="p-3 bg-blue-100 rounded-full">
                 <Package className="h-6 w-6 text-blue-600" />
@@ -187,9 +99,9 @@ export default function Dashboard() {
 
             <div className="bg-white rounded-2xl shadow p-6 flex items-center justify-between">
               <div>
-                <h2 className="text-gray-500 font-medium">Low Stock Items</h2>
+                <h2 className="text-gray-500 font-medium">{t('Low Stock')}</h2>
                 <p className="text-3xl font-bold text-red-600">{loading ? '...' : lowStockItems}</p>
-                <p className="text-gray-400 text-sm">~ Below reorder point</p>
+                <p className="text-gray-400 text-sm">~ {t('Below reorder point')}</p>
               </div>
               <div className="p-3 bg-red-100 rounded-full">
                 <AlertTriangle className="h-6 w-6 text-red-600" />
@@ -198,9 +110,9 @@ export default function Dashboard() {
 
             <div className="bg-white rounded-2xl shadow p-6 flex items-center justify-between">
               <div>
-                <h2 className="text-gray-500 font-medium">Expiring Soon</h2>
+                <h2 className="text-gray-500 font-medium">{t('Expiring Soon')}</h2>
                 <p className="text-3xl font-bold text-orange-600">{loading ? '...' : expiringSoon}</p>
-                <p className="text-gray-400 text-sm">~ Within 60 days</p>
+                <p className="text-gray-400 text-sm">~ {t('Within 60 days')}</p>
               </div>
               <div className="p-3 bg-orange-100 rounded-full">
                 <Clock className="h-6 w-6 text-orange-600" />
@@ -212,7 +124,7 @@ export default function Dashboard() {
           <div className="grid grid-cols-3 gap-6 mt-6">
             <div className="col-span-2 bg-white shadow rounded-lg p-5 border">
               <h2 className="flex items-center font-semibold text-lg mb-4">
-                <Activity className="mr-2" size={20} /> Recent Activities
+                <Activity className="mr-2" size={20} /> {t('Recent Activities')}
               </h2>
               <ul className="space-y-4">
                 {loading ? (
@@ -220,9 +132,9 @@ export default function Dashboard() {
                     <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[var(--primary)]"></div>
                   </li>
                 ) : error ? (
-                  <li className="text-center py-8 text-red-500">Error: {error}</li>
+                  <li className="text-center py-8 text-red-500">{t('Error')}: {error}</li>
                 ) : activities.length === 0 ? (
-                  <li className="text-center py-8 text-gray-500">No recent activities</li>
+                  <li className="text-center py-8 text-gray-500">{t('No recent activities')}</li>
                 ) : (
                   activities.map((activity) => (
                     <li
@@ -263,7 +175,7 @@ export default function Dashboard() {
             
             <div className="bg-white shadow rounded-lg p-5 border">
               <h2 className="flex items-center font-semibold text-lg mb-4">
-                <Package className="mr-2" size={20} /> Top Products
+                <Package className="mr-2" size={20} /> {t('Top Products')}
               </h2>
               <ul className="space-y-4">
                 {loading ? (
@@ -271,9 +183,9 @@ export default function Dashboard() {
                     <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[var(--primary)]"></div>
                   </li>
                 ) : error ? (
-                  <li className="text-center py-8 text-red-500">Error loading products</li>
+                  <li className="text-center py-8 text-red-500">{t('Error loading products')}</li>
                 ) : topProducts.length === 0 ? (
-                  <li className="text-center py-8 text-gray-500">No products found</li>
+                  <li className="text-center py-8 text-gray-500">{t('No products found')}</li>
                 ) : (
                   topProducts.map((product, i) => {
                     const utilizationRate = product.quantity > 0 ? (product.issued / product.quantity) * 100 : 0;
@@ -286,7 +198,7 @@ export default function Dashboard() {
                           </span>
                         </div>
                         <div className="flex justify-between text-xs text-gray-500">
-                          <p>Issued: {product.issued}</p>
+                          <p>{t('Issued')}: {product.issued}</p>
                           <p>{product.value.toLocaleString()} RWF</p>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">

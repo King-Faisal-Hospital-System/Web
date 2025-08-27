@@ -20,12 +20,14 @@ import {
 import Image from "next/image";
 import { useState } from "react";
 import Link from "next/link";
+import { useLanguageContext } from "../../../components/LanguageProvider";
 
 export default function SupportPage() {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<{ from: "bot" | "user"; text: string }[]>([
     { from: "bot", text: "Hi! I'm your AI assistant. How can I help you today?" },
   ]);
+  const { t } = useLanguageContext();
 
   const handleSend = () => {
     if (!message.trim()) return;

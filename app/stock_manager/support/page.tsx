@@ -19,8 +19,10 @@ import {
 import Image from "next/image";
 import { useState } from "react";
 import Link from "next/link";
+import { useLanguageContext } from "../../../components/LanguageProvider";
 
 export default function SupportPage() {
+  const { t } = useLanguageContext();
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<
     { from: "bot" | "user"; text: string }[]

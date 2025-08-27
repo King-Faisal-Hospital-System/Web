@@ -25,6 +25,8 @@ import { toggleMenu, closeMenu } from "@/store/slices/reportMenuSlice";
 import { fetchReports, generateReport, fetchReportStats, Report } from "@/store/slices/reportSlice";
 import { fetchMedicines, Medicine } from "@/store/slices/inventorySlice";
 import { RootState, AppDispatch } from "@/store/store";
+import { useLanguageContext } from "../../../components/LanguageProvider";
+import { Sidebar } from "../../../components/Sidebar";
 
 
 
@@ -33,6 +35,7 @@ export default function ReportsPage() {
   const { reports, loading, error, generatingReport, stats, loadingStats } = useSelector((state: RootState) => state.reports);
   const { medicines } = useSelector((state: RootState) => state.inventory);
   const openReportId = useSelector((state: RootState) => state.reportMenu.openReportId);
+  const { t } = useLanguageContext();
   
   const [activeTab, setActiveTab] = useState<"saved" | "inventory" | "expired">("saved");
   const [reportType, setReportType] = useState<"INVENTORY_REPORT" | "EXPIRATION_REPORT">("INVENTORY_REPORT");
@@ -124,107 +127,7 @@ export default function ReportsPage() {
 
   return (
     <div className="flex h-screen">
-      {/* sidebar */}
-      <aside className="w-64 bg-white shadow-sm flex flex-col justify-between">
-        <div>
-          <div className="flex items-center justify-normal h-20">
-            <Image src="/logo.png" alt="Logo" width={80} height={80} />
-          </div>
-
-          <nav className="mt-6">
-            <ul className="space-y-2 px-4">
-              <li>
-                <Link
-                  href="/admin/home"
-                  className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
-                >
-                  <LayoutDashboard size={20} />
-                  <span>Dashboard</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/admin/inventory"
-                  className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
-                >
-                  <Package size={20} />
-                  <span>Inventory</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/admin/reports"
-                  className="flex items-center space-x-3 bg-[var(--primary)] text-white rounded-lg px-3 py-2"
-                >
-                  <FileText size={20} />
-                  <span>Reports</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/admin/suppliers"
-                  className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
-                >
-                  <Truck size={20} />
-                  <span>Suppliers</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/admin/invoices"
-                  className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
-                >
-                  <DollarSign size={20} />
-                  <span>Invoices</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/admin/payments"
-                  className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
-                >
-                  <CreditCard size={20} />
-                  <span>Payments</span>
-                </Link>
-              </li>
-
-              <li>
-                <Link
-                  href="/admin/users"
-                  className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
-                >
-                  <Users size={20} />
-                  <span>Users</span>
-                </Link>
-              </li>
-            </ul>
-          </nav>
-        </div>
-
-        <div className="px-4 pb-6 space-y-3">
-          <Link
-            href="/admin/settings"
-            className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2 cursor-pointer"
-          >
-            <Settings size={20} />
-            <span>Settings</span>
-          </Link>
-          <Link
-            href="/admin/support"
-            className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2 cursor-pointer"
-          >
-            <Headphones size={20} />
-            <span>Support</span>
-          </Link>
-          <Link
-            href="/signin"
-            className="flex items-center space-x-3 hover:bg-red-100 text-red-600 rounded-lg px-3 py-2 cursor-pointer"
-          >
-            <LogOut size={20} />
-            <span>Logout</span>
-          </Link>
-        </div>
-      </aside>
+      <Sidebar />
 
       <div className="flex flex-col flex-1">
         {/* header */}

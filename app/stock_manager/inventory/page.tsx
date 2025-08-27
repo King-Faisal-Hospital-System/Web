@@ -37,7 +37,7 @@ import {
   recordReceipt,
 } from "@/store/slices/inventorySlice";
 import { fetchSuppliers } from "@/store/slices/supplierSlice";
-import { useTranslation } from "../../../lib/i18n";
+import { useLanguageContext } from "../../../components/LanguageProvider";
 
 export type MedicineStatus = "GOOD" | "LOW";
 
@@ -106,7 +106,7 @@ export default function InventoryPage() {
   const { medicines, loading, error } = useSelector((state: RootState) => state.inventory);
   const { suppliers } = useSelector((state: RootState) => state.suppliers);
   const { currentLanguage } = useSelector((state: RootState) => state.language);
-  const { t } = useTranslation(currentLanguage);
+  const { t } = useLanguageContext();
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {

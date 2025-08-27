@@ -22,7 +22,7 @@ import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "../../../store/store";
 import { fetchUserSettings, updateUserSettings, fetchBackupStatus, initiateBackup, updatePersonalInfo, updatePreferences, updateNotifications, updateBackupConfig } from "../../../store/slices/settingsSlice";
 import { setLanguage, initializeLanguage } from "../../../store/slices/languageSlice";
-import { useTranslation } from "../../../lib/i18n";
+import { useLanguageContext } from "../../../components/LanguageProvider";
 
 const SidebarNavItem = ({
   href,
@@ -52,7 +52,7 @@ export default function SettingsPage() {
   const dispatch = useDispatch<AppDispatch>();
   const { personalInfo, preferences, notifications, backup, backupConfig, loading, error, saving, backupLoading } = useSelector((state: RootState) => state.settings);
   const { currentLanguage } = useSelector((state: RootState) => state.language);
-  const { t } = useTranslation(currentLanguage);
+  const { t } = useLanguageContext();
 
   const [activeTab, setActiveTab] = useState<"general" | "backup">("general");
   const [hasChanges, setHasChanges] = useState(false);
