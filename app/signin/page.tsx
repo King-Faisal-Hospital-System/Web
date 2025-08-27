@@ -36,7 +36,7 @@ export default function SignIn() {
       const data = await res.data;
       if (data.message) {
         // Get currently logged in user as per cookie set in cookie storage
-        const result = await api.get("/auth/me");
+        const result = await api.get("/users/me");
         const { user } = result.data;
         dispatch(signInRedux({ email: user.email, accountType: user.role }));
         router.push(accountType === "ADMIN" ? "/admin/home" : "/stock_manager/home");

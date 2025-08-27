@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-export type AccountType = "ADMIN" | "STOCK_MANAGER" | "NULL"; 
+export type AccountType = "ADMIN" | "STOCK_MANAGER" | "NULL"; // add null state for unauthorized sh*t
 
 interface AuthState {
   email: string;
