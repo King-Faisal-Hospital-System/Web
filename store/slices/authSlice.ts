@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { getCurrentUser } from "@/services/user.services";
 
-export type AccountType = "ADMIN" | "STOCK_MANAGER" | "NULL";
+export type AccountType = "ADMIN" | "STOCK_MANAGER" | "NULL"; // add null state for unauthorized sh*t
 
 interface AuthState {
   fullname : string,
