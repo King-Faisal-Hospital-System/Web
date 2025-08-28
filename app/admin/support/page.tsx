@@ -21,6 +21,8 @@ import Image from "next/image";
 import { useState } from "react";
 import Link from "next/link";
 import { useLanguageContext } from "../../../components/LanguageProvider";
+import Sidebar from "@/components/Sidebar";
+import Header from "@/components/Header";
 
 export default function SupportPage() {
   const [message, setMessage] = useState("");
@@ -44,129 +46,14 @@ export default function SupportPage() {
   return (
     <div className="flex h-screen">
       {/* sidebar */}
-      <aside className="w-64 bg-white shadow-sm flex flex-col justify-between">
-        <div>
-          <div className="flex items-center justify-start h-20 px-4">
-            <Image src="/logo.png" alt="Logo" width={80} height={80} />
-          </div>
-          <nav className="mt-6">
-            <ul className="space-y-2 px-4">
-              <li>
-                <Link
-                  href="/admin/home"
-                  className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
-                >
-                  <LayoutDashboard size={20} />
-                  <span>Dashboard</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/admin/inventory"
-                  className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
-                >
-                  <Package size={20} />
-                  <span>Inventory</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/admin/reports"
-                  className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
-                >
-                  <FileText size={20} />
-                  <span>Reports</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/admin/suppliers"
-                  className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
-                >
-                  <Truck size={20} />
-                  <span>Suppliers</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/admin/invoices"
-                  className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
-                >
-                  <CreditCard size={20} />
-                  <span>Invoices</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/admin/payments"
-                  className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
-                >
-                  <DollarSign size={20} />
-                  <span>Payments</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/admin/users"
-                  className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
-                >
-                  <Users size={20} />
-                  <span>Users</span>
-                </Link>
-              </li>
-            </ul>
-          </nav>
-        </div>
-        <div className="px-4 pb-6 space-y-3">
-  <Link href="/admin/settings" className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2 cursor-pointer">
-    <Settings size={20} />
-    <span>Settings</span>
-  </Link>
-  <Link href="/admin/support" className="flex items-center text-white  space-x-3 bg-[var(--primary)] rounded-lg px-3 py-2 cursor-pointer">
-    <Headphones size={20}  className="text-white"/>
-    <span>Support</span>
-  </Link>
-  <Link href="/admin/logout" className="flex items-center space-x-3 hover:bg-red-100 text-red-600 rounded-lg px-3 py-2 cursor-pointer">
-    <LogOut size={20} />
-    <span>Logout</span>
-  </Link>
-</div>
-      </aside>
+      <Sidebar/>
 
      
       <div className="flex flex-col flex-1" style={{ background: "var(--background)" }}>
         {/* header */}
-        <header className="flex justify-between items-center bg-white px-6 py-4 border-b border-gray-200">
-          <div className="relative w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-            <input
-              type="text"
-              placeholder="Search..."
-              className="pl-10 pr-4 py-2 w-full rounded-lg bg-[var(--input-field)] outline-none focus:ring-2 focus:ring-[var(--primary)]"
-            />
-          </div>
-          <div className="flex items-center space-x-4">
-            <Bell size={22} className="cursor-pointer" />
-            <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 relative">
-                <Image
-                  src="/profile.jpg"
-                  alt="User profile"
-                  fill
-                  className="rounded-full object-cover"
-                />
-              </div>
-              <div>
-                <p className="text-sm font-semibold">Dr. Dylan</p>
-                <p className="text-xs text-gray-500">Pharmacist</p>
-              </div>
-            </div>
-          </div>
-        </header>
+        <Header/>
 
-      
         <main className="flex-1 flex flex-col p-6">
-         
           <div className="flex-1 overflow-y-auto space-y-4">
             {messages.map((msg, idx) => (
               <div

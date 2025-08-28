@@ -27,6 +27,7 @@ import type { RootState, AppDispatch } from "../../../store/store";
 import { fetchDashboardStats } from "../../../store/slices/dashboardSlice";
 import { useLanguageContext } from "../../../components/LanguageProvider";
 import { Sidebar } from "../../../components/Sidebar";
+import Header from "@/components/Header";
 
 export default function Dashboard() {
   const dispatch = useDispatch<AppDispatch>();
@@ -44,33 +45,7 @@ export default function Dashboard() {
       
       <div className="flex flex-col flex-1">
         {/* header */}
-        <div className="flex justify-between items-center bg-white px-6 py-4 border-b h-50 border-gray-200">
-          <div className="relative w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-            <input
-              type="text"
-              placeholder={t('Search')}
-              className="pl-10 pr-4 py-2 w-full rounded-lg bg-[var(--input-field)] outline-none focus:ring-2 focus:ring-[var(--primary)]"
-            />
-          </div>
-
-          <div className="flex items-center space-x-4">
-            <Bell size={22} className="cursor-pointer" />
-            <div className="flex items-center space-x-2">
-              <Image
-                src="/profile.jpg"
-                alt="User"
-                className="w-10 h-10 rounded-full"
-                width={80}
-                height={80}
-              />
-              <div>
-                <p className="text-sm font-semibold">{t('Dr. Dylan')}</p>
-                <p className="text-xs text-gray-500">{t('Pharmacist')}</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Header/>
 
         {/* body */}
         <main className="flex-1 p-6 overflow-y-auto">

@@ -25,6 +25,7 @@ import { RootState, AppDispatch } from "@/store/store";
 import { fetchSuppliers, addSupplier, updateSupplier, deleteSupplier, Supplier } from "@/store/slices/supplierSlice";
 import { useLanguageContext } from "../../../components/LanguageProvider";
 import { Sidebar } from "../../../components/Sidebar";
+import Header from "@/components/Header";
 
 interface PurchaseOrder {
   id: string;
@@ -200,36 +201,7 @@ export default function SuppliersPage() {
     
       <div className="flex flex-col flex-1">
         {/* header */}
-        <div className="flex justify-between items-center bg-white px-6 py-4 border-b border-gray-200">
-          <div className="relative w-72">
-            <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              size={20}
-            />
-            <input
-              type="text"
-              placeholder="Search..."
-              className="pl-10 pr-4 py-2 w-full rounded-lg bg-[var(--input-field)] outline-none focus:ring-2 focus:ring-[var(--primary)]"
-            />
-          </div>
-
-          <div className="flex items-center space-x-4">
-            <Bell size={22} className="cursor-pointer" />
-            <div className="flex items-center space-x-2">
-              <Image
-                src="/profile.jpg"
-                alt="User"
-                className="w-10 h-10 rounded-full"
-                width={40}
-                height={40}
-              />
-              <div>
-                <p className="text-sm font-semibold">Dr. Dylan</p>
-                <p className="text-xs text-gray-500">Pharmacist</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Header/>
 
         {/* body */}
         <main className="flex-1 p-6 overflow-y-auto">

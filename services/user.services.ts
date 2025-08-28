@@ -1,4 +1,4 @@
-import axios from "axios";
+import api from "@/lib/api";
 
 export interface User {
   _id: string;
@@ -6,13 +6,6 @@ export interface User {
   isVerified: boolean;
   createdAt: string;
 }
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/admin";
-
-const api = axios.create({
-  baseURL: API_URL,
-  withCredentials: true, 
-});
 
 // Fetch all users
 export const fetchAllUsers = async (): Promise<User[]> => {
@@ -22,6 +15,15 @@ export const fetchAllUsers = async (): Promise<User[]> => {
 
 // Approve or revoke a user
 export const verifyUser = async (userId: string, action: "approve" | "reject") => {
-  const res = await api.patch(`/verify-user/${userId}`, { action });
+  const res = await api.patch(`/users/verify-user/${userId}`, { action });
   return res.data;
 };
+
+export const getCurrentUser = async () => {
+  try {
+    const res = await api.get("/users/me");
+    return res.data.user
+  } catch (error : any) {
+    throw new Error(error)
+  }
+}

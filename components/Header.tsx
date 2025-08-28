@@ -3,6 +3,10 @@
 import { Bell, Search } from "lucide-react";
 import Image from "next/image";
 import { useLanguageContext } from "./LanguageProvider";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/store/store";
+import { useEffect } from "react";
+import { getCurrentUser } from "@/services/user.services";
 
 interface HeaderProps {
   className?: string;
@@ -10,7 +14,6 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ className = "" }) => {
   const { t } = useLanguageContext();
-
   return (
     <header className={`flex justify-between items-center bg-white px-6 py-4 border-b border-gray-200 ${className}`}>
       <div className="relative w-72">
@@ -36,8 +39,8 @@ export const Header: React.FC<HeaderProps> = ({ className = "" }) => {
             height={40}
           />
           <div>
-            <p className="text-sm font-semibold">Dr. Dylan</p>
-            <p className="text-xs text-gray-500">Pharmacist</p>
+            <p className="text-sm font-semibold">Test User</p>
+            <p className="text-xs text-gray-500">Pharmacis</p>
           </div>
         </div>
       </div>

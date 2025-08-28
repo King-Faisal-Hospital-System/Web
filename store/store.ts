@@ -8,6 +8,7 @@ import settingsReducer from "./slices/settingsSlice";
 import languageReducer from "./slices/languageSlice";
 import supplierReducer from "./slices/supplierSlice";
 import reportMenuReducer from "./slices/reportMenuSlice";
+import userReducer from "./slices/userSlice"
 
 export const store = configureStore({
   reducer: {
@@ -20,6 +21,7 @@ export const store = configureStore({
     language: languageReducer,
     suppliers: supplierReducer,
     reportMenu: reportMenuReducer,
+    currentUser : userReducer
   },
 });
 

@@ -1,4 +1,4 @@
-import axios from "axios";
+import api from "@/lib/api";
 
 export interface Stock {
   _id: string;
@@ -15,28 +15,26 @@ export interface Stock {
   status: "GOOD" | "LOW";
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/stocks";
-
 // Fetch all stocks
 export const fetchAllStocks = async (): Promise<Stock[]> => {
-  const res = await axios.get(API_URL);
+  const res = await api.get("/stocks")
   return res.data.stocks;
 };
 
 // Create a new stock
 export const createStock = async (stockData: any) => {
-  const res = await axios.post(API_URL, stockData);
+  const res = await api.post("/stocks", stockData);
   return res.data;
 };
 
 // Receive stock
 export const receiveStock = async (stockId: string, data: { orderId: string, batch_number: string, quantity_received: number, notes: string }) => {
-  const res = await axios.patch(`${API_URL}/receive/${stockId}`, data);
+  const res = await api.patch(`/stocks/receive/${stockId}`, data);
   return res.data;
 };
 
 // Issue stock
 export const issueStockAPI = async (stockId: string, data: { requestor: string, quantity: number, remark: string }) => {
-  const res = await axios.patch(`${API_URL}/issue/${stockId}`, data);
+  const res = await api.patch(`stocks/issue/${stockId}`, data);
   return res.data;
 };
