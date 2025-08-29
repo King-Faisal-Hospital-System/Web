@@ -17,7 +17,6 @@ import {
   ChevronDown,
   DollarSign,
 } from "lucide-react";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleMenu, closeMenu } from "@/store/slices/reportMenuSlice";

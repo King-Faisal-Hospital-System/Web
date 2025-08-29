@@ -1,9 +1,10 @@
+import api from '@/lib/api';
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 
 // Payment interface
 export interface Payment {
   _id: string;
-  invoice: string; 
+  invoice: string;
   amount: number;
   method: string;
   status: string;
@@ -36,14 +37,14 @@ export const fetchPayments = createAsyncThunk(
         `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/payments`,
         {
           method: 'GET',
-          credentials: 'include', 
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
           },
         }
       );
 
-     
+
       if (!response.ok) {
         const errorData = await response.json();
         return rejectWithValue(errorData.message || 'Failed to fetch payments');
@@ -51,7 +52,7 @@ export const fetchPayments = createAsyncThunk(
 
       const data = await response.json();
 
-      
+
       return data.data || data;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to fetch payments');
@@ -72,28 +73,8 @@ export const createPayment = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/payments`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify(paymentData),
-        }
-      );
-
-     
-      if (!response.ok) {
-        const errorData = await response.json();
-        return rejectWithValue(errorData.message || 'Failed to create payment');
-      }
-
-      const data = await response.json();
-
-      
-      return data.data || data;
+      const response = await api.post("/payments", { paymentData })
+      return response.data;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to create payment');
     }
@@ -110,21 +91,8 @@ export const updatePayment = createAsyncThunk(
     notes?: string;
   }, { rejectWithValue }) => {
     try {
-      const response = await fetch( `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/payments/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updateData),
-      });
-      
-      const data = await response.json();
-      
-      if (!data.success) {
-        return rejectWithValue(data.message);
-      }
-      
-      return data.data;
+      const response = await api.put(`/payments/${id}`, { updateData });
+      return response.data;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to update payment');
     }
@@ -135,17 +103,9 @@ export const deletePayment = createAsyncThunk(
   'payments/deletePayment',
   async (id: string, { rejectWithValue }) => {
     try {
-      const response = await fetch( `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/payments/${id}`, {
-        method: 'DELETE',
+      const response = await api.delete(`/payments/${id}`, {
       });
-      
-      const data = await response.json();
-      
-      if (!data.success) {
-        return rejectWithValue(data.message);
-      }
-      
-      return id;
+      return response.data;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to delete payment');
     }
@@ -176,7 +136,7 @@ const paymentSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      
+
       // Create payment
       .addCase(createPayment.pending, (state) => {
         state.loading = true;
@@ -190,7 +150,7 @@ const paymentSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      
+
       // Update payment
       .addCase(updatePayment.pending, (state) => {
         state.loading = true;
@@ -207,7 +167,7 @@ const paymentSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      
+
       // Delete payment
       .addCase(deletePayment.pending, (state) => {
         state.loading = true;

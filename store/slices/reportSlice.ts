@@ -1,3 +1,4 @@
+import api from '@/lib/api';
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 
 // Report interface
@@ -62,23 +63,8 @@ export const fetchReports = createAsyncThunk(
   'reports/fetchReports',
   async (_, { rejectWithValue }) => {
     try {
-     const response = await fetch(
-  `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/reports`,
-  {
-    method: 'GET',
-    credentials: 'include', 
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  }
-);
-      const data = await response.json();
-      
-      if (!response.ok) {
-        return rejectWithValue(data.message || 'Failed to fetch reports');
-      }
-      
-      return data.reports;
+      const response = await api.get("/reports");
+      return response.data.reports;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to fetch reports');
     }
@@ -89,25 +75,8 @@ export const generateReport = createAsyncThunk(
   'reports/generateReport',
   async (reportType: 'INVENTORY_REPORT' | 'EXPIRATION_REPORT' | 'SUPPLIER_REPORT', { rejectWithValue }) => {
     try {
-      const response = await fetch(
-  `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/reports`,
-  {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include', 
-    body: JSON.stringify({ type: reportType }),
-  }
-);
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        return rejectWithValue(data.message || 'Failed to generate report');
-      }
-      
-      return data;
+      const response = await api.post("/reports", { type: reportType });
+      return response.data;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to generate report');
     }
@@ -118,23 +87,8 @@ export const generateSupplierReport = createAsyncThunk(
   'reports/generateSupplierReport',
   async (supplierId: string, { rejectWithValue }) => {
     try {
-      const response = await fetch(
-  `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/reports/supplier/${supplierId}`,
-  {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include',
-  }
-);
-      const data = await response.json();
-      
-      if (!response.ok) {
-        return rejectWithValue(data.message || 'Failed to generate supplier report');
-      }
-      
-      return data;
+      const response = await api.post(`/reports/supplier/${supplierId}`);
+      return response.data;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to generate supplier report');
     }
@@ -145,23 +99,8 @@ export const getReport = createAsyncThunk(
   'reports/getReport',
   async (reportId: string, { rejectWithValue }) => {
     try {
-      const response = await fetch(
-  `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/reports/${reportId}`,
-  {
-    method: 'GET',
-    credentials: 'include', 
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  }
-);
-      const data = await response.json();
-      
-      if (!response.ok) {
-        return rejectWithValue(data.message || 'Failed to fetch report');
-      }
-      
-      return data.report;
+      const response = await api.get(`/reports/${reportId}`);
+      return response.data.report;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to fetch report');
     }
@@ -174,34 +113,34 @@ export const downloadReport = createAsyncThunk(
     try {
       // Extract filename from URL
       const filename = fileUrl.split('/').pop() || 'report.pdf';
-      
+
       // Fetch the PDF file
-     const response = await fetch(
-  `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}${fileUrl}`,
-  {
-    method: 'GET',
-    credentials: 'include', 
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  }
-);
+      const response = await fetch(
+        `${fileUrl}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
-if (!response.ok) {
-  const errorData = await response.json();
-  throw new Error(errorData.message || 'Failed to fetch file');
-}
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch file');
+      }
 
-const data = await response.json();
-return data;
+      const data = await response.json();
+      return data;
 
       if (!response.ok) {
         return rejectWithValue('Failed to download report');
       }
-      
-     
+
+
       const blob = await response.blob();
-      
+
       // Create download link
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -209,11 +148,11 @@ return data;
       link.download = filename;
       document.body.appendChild(link);
       link.click();
-      
+
       // Cleanup
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      
+
       return { success: true, filename };
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to download report');
@@ -225,24 +164,8 @@ export const fetchReportStats = createAsyncThunk(
   'reports/fetchReportStats',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await fetch(
-  `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/reports/stats`,
-  {
-    method: 'GET',
-    credentials: 'include', 
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  }
-);
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        return rejectWithValue(data.message || 'Failed to fetch report statistics');
-      }
-      
-      return data.stats;
+      const response = await api.get("/reports/stats");
+      return response.data.stats;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to fetch report statistics');
     }
@@ -282,7 +205,7 @@ const reportSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      
+
       // Generate report
       .addCase(generateReport.pending, (state) => {
         state.generatingReport = true;
@@ -304,7 +227,7 @@ const reportSlice = createSlice({
         state.generatingReport = false;
         state.error = action.payload as string;
       })
-      
+
       // Generate supplier report
       .addCase(generateSupplierReport.pending, (state) => {
         state.generatingReport = true;
@@ -326,7 +249,7 @@ const reportSlice = createSlice({
         state.generatingReport = false;
         state.error = action.payload as string;
       })
-      
+
       // Get report
       .addCase(getReport.pending, (state) => {
         state.loading = true;
@@ -343,7 +266,7 @@ const reportSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      
+
       // Download report
       .addCase(downloadReport.pending, (state) => {
         state.loading = true;
@@ -356,7 +279,7 @@ const reportSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      
+
       // Fetch report stats
       .addCase(fetchReportStats.pending, (state) => {
         state.loadingStats = true;
