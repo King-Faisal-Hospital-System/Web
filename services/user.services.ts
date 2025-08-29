@@ -9,13 +9,13 @@ export interface User {
 
 // Fetch all users
 export const fetchAllUsers = async (): Promise<User[]> => {
-  const res = await api.get("/users");
+  const res = await api.get("/admin/users");
   return res.data;
 };
 
 // Approve or revoke a user
 export const verifyUser = async (userId: string, action: "approve" | "reject") => {
-  const res = await api.patch(`/users/verify-user/${userId}`, { action });
+  const res = await api.patch(`/admin/verify-user/${userId}`, { action });
   return res.data;
 };
 
