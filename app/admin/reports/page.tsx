@@ -26,7 +26,7 @@ import { RootState, AppDispatch } from "@/store/store";
 import { useLanguageContext } from "../../../components/LanguageProvider";
 import { Sidebar } from "../../../components/Sidebar";
 import Header from "@/components/Header";
-
+import axios from "axios";
 
 
 export default function ReportsPage() {
@@ -35,7 +35,7 @@ export default function ReportsPage() {
   const { medicines } = useSelector((state: RootState) => state.inventory);
   const openReportId = useSelector((state: RootState) => state.reportMenu.openReportId);
   const { t } = useLanguageContext();
-  
+
   const [activeTab, setActiveTab] = useState<"saved" | "inventory" | "expired">("saved");
   const [reportType, setReportType] = useState<"INVENTORY_REPORT" | "EXPIRATION_REPORT">("INVENTORY_REPORT");
 
@@ -72,7 +72,6 @@ export default function ReportsPage() {
   const handleGenerateReport = async () => {
     try {
       await dispatch(generateReport(reportType));
-      
       setTimeout(() => {
         dispatch(fetchReports());
       }, 2000);
@@ -81,18 +80,23 @@ export default function ReportsPage() {
     }
   };
 
-  const handleDownloadReport = (report: any) => {
-    if (report.file_url) {
-      const link = document.createElement('a');
-      link.href = report.file_url;
-      link.download = `${report.name || report.type}_${new Date(report.createdAt).toLocaleDateString()}.pdf`;
+  const handleDownloadReport = async (report: any) => {
+    const url = report.file_url;
+    if (url) {
+      const response = await axios.get(url, { responseType: "blob" });
+      const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = blobUrl;
+
+      link.download = url.split("/").pop();
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
+      link.remove();
+      window.URL.revokeObjectURL(blobUrl);
     }
   };
 
-  
+
   const medicinesWithStatus = medicines
     .filter((med): med is NonNullable<typeof med> => med != null)
     .map((med) => {
@@ -114,14 +118,14 @@ export default function ReportsPage() {
       };
     });
 
-  
+
   const expiredItems = medicinesWithStatus.filter((item) => {
     const expiryDate = new Date(item.expiry || '');
     const today = new Date();
     return expiryDate < today;
   });
 
- 
+
   const lowStockItems = medicinesWithStatus.filter((item) => item.status === "LOW");
 
   return (
@@ -130,7 +134,7 @@ export default function ReportsPage() {
 
       <div className="flex flex-col flex-1">
         {/* header */}
-        <Header/>
+        <Header />
 
         {/* body */}
         <main className="flex-1 p-6 overflow-y-auto">
@@ -141,7 +145,7 @@ export default function ReportsPage() {
                 Generate comprehensive reports data
               </p>
             </div>
-            <button 
+            <button
               onClick={handleGenerateReport}
               disabled={generatingReport}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--primary)] text-white hover:opacity-90 shadow disabled:opacity-50"
@@ -223,23 +227,21 @@ export default function ReportsPage() {
               <div>
                 <p className="text-sm text-gray-600 mb-2">Report Type</p>
                 <div className="flex items-center gap-3">
-                  <button 
+                  <button
                     onClick={() => setReportType('INVENTORY_REPORT')}
-                    className={`px-4 py-2 rounded-md text-sm ${
-                      reportType === 'INVENTORY_REPORT' 
-                        ? 'bg-[var(--primary)] text-white' 
-                        : 'border border-gray-300 text-gray-700 bg-white'
-                    }`}
+                    className={`px-4 py-2 rounded-md text-sm ${reportType === 'INVENTORY_REPORT'
+                      ? 'bg-[var(--primary)] text-white'
+                      : 'border border-gray-300 text-gray-700 bg-white'
+                      }`}
                   >
                     Inventory
                   </button>
-                  <button 
+                  <button
                     onClick={() => setReportType('EXPIRATION_REPORT')}
-                    className={`px-4 py-2 rounded-md text-sm ${
-                      reportType === 'EXPIRATION_REPORT' 
-                        ? 'bg-[var(--primary)] text-white' 
-                        : 'border border-gray-300 text-gray-700 bg-white'
-                    }`}
+                    className={`px-4 py-2 rounded-md text-sm ${reportType === 'EXPIRATION_REPORT'
+                      ? 'bg-[var(--primary)] text-white'
+                      : 'border border-gray-300 text-gray-700 bg-white'
+                      }`}
                   >
                     Expired
                   </button>
@@ -250,33 +252,30 @@ export default function ReportsPage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setActiveTab("saved")}
-                className={`px-4 py-2 rounded-md text-sm ${
-                  activeTab === "saved"
-                    ? "bg-gray-200 text-gray-800"
-                    : "bg-gray-100 border border-gray-200 text-gray-700"
-                }`}
+                className={`px-4 py-2 rounded-md text-sm ${activeTab === "saved"
+                  ? "bg-gray-200 text-gray-800"
+                  : "bg-gray-100 border border-gray-200 text-gray-700"
+                  }`}
               >
                 Saved Reports
               </button>
 
               <button
                 onClick={() => setActiveTab("inventory")}
-                className={`px-4 py-2 rounded-md text-sm ${
-                  activeTab === "inventory"
-                    ? "bg-gray-200 text-gray-800"
-                    : "bg-gray-100 border border-gray-200 text-gray-700"
-                }`}
+                className={`px-4 py-2 rounded-md text-sm ${activeTab === "inventory"
+                  ? "bg-gray-200 text-gray-800"
+                  : "bg-gray-100 border border-gray-200 text-gray-700"
+                  }`}
               >
                 Current Inventory
               </button>
 
               <button
                 onClick={() => setActiveTab("expired")}
-                className={`px-4 py-2 rounded-md text-sm ${
-                  activeTab === "expired"
-                    ? "bg-gray-200 text-gray-800"
-                    : "bg-gray-100 border border-gray-200 text-gray-700"
-                }`}
+                className={`px-4 py-2 rounded-md text-sm ${activeTab === "expired"
+                  ? "bg-gray-200 text-gray-800"
+                  : "bg-gray-100 border border-gray-200 text-gray-700"
+                  }`}
               >
                 Expired Products
               </button>
@@ -357,7 +356,7 @@ export default function ReportsPage() {
                                 <button className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50">
                                   View
                                 </button>
-                                <button 
+                                <button
                                   onClick={() => handleDownloadReport(r)}
                                   disabled={!r.file_url}
                                   className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 disabled:opacity-50"
@@ -397,13 +396,12 @@ export default function ReportsPage() {
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-3">
                             <div
-                              className={`w-8 h-8 flex items-center justify-center rounded-full ${
-                                item.status === "GOOD"
-                                  ? "bg-green-100 text-green-700"
-                                  : item.status === "LOW"
+                              className={`w-8 h-8 flex items-center justify-center rounded-full ${item.status === "GOOD"
+                                ? "bg-green-100 text-green-700"
+                                : item.status === "LOW"
                                   ? "bg-orange-100 text-orange-700"
                                   : "bg-red-100 text-red-700"
-                              }`}
+                                }`}
                             >
                               {item.status === "GOOD" ? "✓" : item.status === "LOW" ? "!" : "×"}
                             </div>
@@ -420,13 +418,12 @@ export default function ReportsPage() {
                           </div>
 
                           <span
-                            className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                              item.status === "GOOD"
-                                ? "bg-green-100 text-green-700"
-                                : item.status === "LOW"
+                            className={`px-3 py-1 text-xs font-semibold rounded-full ${item.status === "GOOD"
+                              ? "bg-green-100 text-green-700"
+                              : item.status === "LOW"
                                 ? "bg-orange-100 text-orange-700"
                                 : "bg-red-100 text-red-700"
-                            }`}
+                              }`}
                           >
                             {item.status}
                           </span>
@@ -483,7 +480,7 @@ export default function ReportsPage() {
                         {medicinesWithStatus.reduce((total, item) => total + item.totalValue, 0).toLocaleString()} Rwf
                       </span>
                     </p>
-                    <button 
+                    <button
                       onClick={() => {
                         setReportType("INVENTORY_REPORT");
                         handleGenerateReport();
@@ -558,7 +555,7 @@ export default function ReportsPage() {
                         Total Loss: {expiredItems.reduce((sum, item) => sum + item.totalValue, 0).toLocaleString()} RWF
                       </span>
                     </p>
-                    <button 
+                    <button
                       onClick={() => {
                         setReportType("EXPIRATION_REPORT");
                         handleGenerateReport();
