@@ -1,5 +1,6 @@
 import api from '@/lib/api';
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import axios from 'axios';
 
 // Report interface
 export interface Report {
@@ -111,49 +112,17 @@ export const downloadReport = createAsyncThunk(
   'reports/downloadReport',
   async (fileUrl: string, { rejectWithValue }) => {
     try {
-      // Extract filename from URL
-      const filename = fileUrl.split('/').pop() || 'report.pdf';
-
-      // Fetch the PDF file
-      const response = await fetch(
-        `${fileUrl}`,
-        {
-          method: 'GET',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to fetch file');
-      }
-
-      const data = await response.json();
-      return data;
-
-      if (!response.ok) {
-        return rejectWithValue('Failed to download report');
-      }
-
-
-      const blob = await response.blob();
-
-      // Create download link
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename;
+      const response = await axios.get(fileUrl, { responseType : "blob" });
+      const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      
+      link.download = fileUrl.split("/").pop() || "download";
       document.body.appendChild(link);
       link.click();
-
-      // Cleanup
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      return { success: true, filename };
+      link.remove();
+      window.URL.revokeObjectURL(blobUrl);
+      return;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to download report');
     }
