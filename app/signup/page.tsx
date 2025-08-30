@@ -4,6 +4,7 @@ import { UserIcon, EnvelopeIcon, PhoneIcon, LockClosedIcon } from "@heroicons/re
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import api from "@/lib/api";
+import NotificationModal from "@/components/NotificationModal";
 
 export default function CreateAccount() {
   const router = useRouter();
@@ -14,9 +15,20 @@ export default function CreateAccount() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"ADMIN" | "STOCK_MANAGER">("STOCK_MANAGER");
+  const [role, setRole] = useState<"STOCK_MANAGER">("STOCK_MANAGER");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [notification, setNotification] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: "success" | "error";
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "success",
+  });
 
   const handleSignUp = async () => {
     if (!firstName || !lastName || !username || !email || !phone || !password) {
@@ -38,8 +50,15 @@ export default function CreateAccount() {
       });
 
       console.log("Account created:", res.data);
-      alert(`Account created successfully as ${role}`);
-      router.push("/signin");
+      setNotification({
+        isOpen: true,
+        title: "Account Created Successfully!",
+        message: "Stock Manager account created. Please wait for admin verification.",
+        type: "success",
+      });
+      setTimeout(() => {
+        router.push("/signin");
+      }, 2000);
     } catch (err: any) {
       console.error(err);
    
@@ -57,20 +76,12 @@ export default function CreateAccount() {
         <p className="text-center text-gray-600 mb-8">KFH Inventory Management</p>
 
     
-        <div className="flex justify-center space-x-4 mb-6">
-          <button
-            onClick={() => setRole("ADMIN")}
-            className={`px-4 py-2 rounded-md ${role === "ADMIN" ? "bg-teal-800 text-white" : "bg-gray-200 text-gray-700"}`}
-          >
-            Admin
-          </button>
-          <button
-            onClick={() => setRole("STOCK_MANAGER")}
-            className={`px-4 py-2 rounded-md ${role === "STOCK_MANAGER" ? "bg-teal-800 text-white" : "bg-gray-200 text-gray-700"}`}
-          >
-            Stock Manager
-          </button>
+        <div className="flex justify-center mb-6">
+          <div className="px-4 py-2 rounded-md bg-teal-800 text-white">
+            Stock Manager Registration
+          </div>
         </div>
+        
 
         <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
          
@@ -180,6 +191,14 @@ export default function CreateAccount() {
           <a href="/signin" className="text-teal-800 hover:underline">Sign In</a>
         </p>
       </div>
+
+      <NotificationModal
+        isOpen={notification.isOpen}
+        onClose={() => setNotification({ ...notification, isOpen: false })}
+        title={notification.title}
+        message={notification.message}
+        type={notification.type}
+      />
     </div>
   );
 }

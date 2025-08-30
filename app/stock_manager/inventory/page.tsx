@@ -80,7 +80,7 @@ interface FormData {
 
 export default function InventoryPage() {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const menuRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(null);
   const [actionType, setActionType] = useState<"add" | "receipt" | "issue" | "edit">("add");
@@ -115,14 +115,19 @@ export default function InventoryPage() {
   }, [dispatch]);
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setOpenMenu(null);
+    const handleClickOutside = (e: MouseEvent) => {
+      if (openMenu) {
+        const isClickInsideAnyMenu = Object.values(menuRefs.current).some(
+          (ref) => ref && ref.contains(e.target as Node)
+        );
+        if (!isClickInsideAnyMenu) {
+          setOpenMenu(null);
+        }
       }
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [openMenu]);
 
   const categories = ["TABLETS", "CAPSULE", "SYRUP", "INJECTION", "CREAM", "DROPS"];
   const units = ["PIECES", "BOXES", "BOTTLES", "PACKS", "KILOGRAMS", "LITERS"];
@@ -172,11 +177,13 @@ export default function InventoryPage() {
       requestRemarks: "",
     });
     setIsModalOpen(true);
+    setOpenMenu(null);
   };
 
   const handleViewDetails = (medicine: Medicine) => {
     setViewDetails(medicine);
     setIsModalOpen(true);
+    setOpenMenu(null);
   };
 
   const handleRecordReceipt = (medicine: Medicine) => {
@@ -184,6 +191,11 @@ export default function InventoryPage() {
     setActionType("receipt");
     setFormData({
       ...formData,
+      name: medicine.name,
+      category: medicine.category || "",
+      form: medicine.form || "",
+      product_description: medicine.product_description || "",
+      supplierId: medicine.supplierId || "",
       batch: medicine.batch_number || "",
       expiry: medicine.expiry || "",
       unitCost: medicine.unit_price || 0,
@@ -191,6 +203,7 @@ export default function InventoryPage() {
       notes: medicine.notes || "",
     });
     setIsModalOpen(true);
+    setOpenMenu(null);
   };
 
   const handleIssueStock = (medicine: Medicine) => {
@@ -198,6 +211,15 @@ export default function InventoryPage() {
     setActionType("issue");
     setFormData({
       ...formData,
+      name: medicine.name,
+      category: medicine.category || "",
+      form: medicine.form || "",
+      product_description: medicine.product_description || "",
+      supplierId: medicine.supplierId || "",
+      batch: medicine.batch_number || "",
+      expiry: medicine.expiry || "",
+      unitCost: medicine.unit_price || 0,
+      notes: medicine.notes || "",
       requestNumber: `REQ-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`,
       issueDate: new Date().toISOString().split("T")[0],
       received: 0,
@@ -206,6 +228,7 @@ export default function InventoryPage() {
       department: "",
     });
     setIsModalOpen(true);
+    setOpenMenu(null);
   };
 
   const handleCloseModal = () => {
@@ -431,7 +454,7 @@ export default function InventoryPage() {
             {medicinesWithStatus.map((med) => (
               <div
                 key={med.id}
-                ref={menuRef}
+                ref={(el) => { menuRefs.current[med.id] = el; }}
                 className="p-4 border rounded-xl relative bg-white shadow-sm"
               >
                 <div className="absolute top-3 right-3">

@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { signIn as signInRedux, AccountType } from "../../store/slices/authSlice";
 import api from "@/lib/api";
+import NotificationModal from "@/components/NotificationModal";
 
 export default function SignIn() {
   const router = useRouter();
@@ -16,6 +17,17 @@ export default function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [notification, setNotification] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: "success" | "error";
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "success",
+  });
 
   const handleAccountTypeClick = (type: AccountType) => {
     setAccountType(type);
@@ -23,7 +35,12 @@ export default function SignIn() {
 
   const handleSignIn = async () => {
     if (!email || !password) {
-      alert("Please enter email and password");
+      setNotification({
+        isOpen: true,
+        title: "Missing Information",
+        message: "Please enter email and password",
+        type: "error",
+      });
       return;
     }
     setLoading(true);
@@ -39,11 +56,25 @@ export default function SignIn() {
         const result = await api.get("/users/me");
         const { user } = result.data;
         dispatch(signInRedux({ email: user.email, accountType: user.role }));
-        router.push(accountType === "ADMIN" ? "/admin/home" : "/stock_manager/home");
+        setNotification({
+          isOpen: true,
+          title: "Login Successful!",
+          message: `Welcome back, ${user.fullname}`,
+          type: "success",
+        });
+        setTimeout(() => {
+          router.push(accountType === "ADMIN" ? "/admin/home" : "/stock_manager/home");
+        }, 1500);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error:", error);
-      alert("Something went wrong. Try again.");
+      const message = error.response?.data?.message || "Something went wrong. Try again.";
+      setNotification({
+        isOpen: true,
+        title: "Login Failed",
+        message: message,
+        type: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -127,6 +158,14 @@ export default function SignIn() {
           </a>
         </p>
       </div>
+
+      <NotificationModal
+        isOpen={notification.isOpen}
+        onClose={() => setNotification({ ...notification, isOpen: false })}
+        title={notification.title}
+        message={notification.message}
+        type={notification.type}
+      />
     </div>
   );
 }
