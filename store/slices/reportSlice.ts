@@ -112,12 +112,11 @@ export const downloadReport = createAsyncThunk(
   'reports/downloadReport',
   async (fileUrl: string, { rejectWithValue }) => {
     try {
-      const response = await axios.get(fileUrl, { responseType : "blob" });
-      const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
+      const response = await axios.get(fileUrl, { responseType: "blob" });
+      const blobUrl = window.URL.createObjectURL(response.data);
       const link = document.createElement("a");
       link.href = blobUrl;
-      
-      link.download = fileUrl.split("/").pop() || "download";
+      link.download = fileUrl.split("/").pop() || "report.pdf";
       document.body.appendChild(link);
       link.click();
       link.remove();
