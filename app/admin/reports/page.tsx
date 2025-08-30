@@ -80,19 +80,20 @@ export default function ReportsPage() {
     }
   };
 
-  const handleDownloadReport = async (report: any) => {
-    const url = report.file_url;
-    if (url) {
-      const response = await axios.get(url, { responseType: "blob" });
-      const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = blobUrl;
-
-      link.download = url.split("/").pop();
+  const handleDownloadReport = (report: any) => {
+    if (report.file_url) {
+      const link = document.createElement('a');
+      link.href = report.file_url;
+      link.download = `${report.name || report.type}_${new Date(report.createdAt).toLocaleDateString()}.pdf`;
       document.body.appendChild(link);
       link.click();
-      link.remove();
-      window.URL.revokeObjectURL(blobUrl);
+      document.body.removeChild(link);
+    }
+  };
+
+  const handleViewReport = (report: any) => {
+    if (report.file_url) {
+      window.open(report.file_url, '_blank');
     }
   };
 
@@ -353,7 +354,11 @@ export default function ReportsPage() {
                             </button>
                             {openReportId === r._id && (
                               <div className="report-menu absolute right-0 mt-2 w-36 bg-white border border-gray-200 shadow-lg rounded-lg overflow-hidden z-10">
-                                <button className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50">
+                                <button 
+                                  onClick={() => handleViewReport(r)}
+                                  disabled={!r.file_url}
+                                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 disabled:opacity-50"
+                                >
                                   View
                                 </button>
                                 <button
