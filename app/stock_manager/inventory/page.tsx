@@ -38,6 +38,7 @@ import {
 } from "@/store/slices/inventorySlice";
 import { fetchSuppliers } from "@/store/slices/supplierSlice";
 import { useLanguageContext } from "../../../components/LanguageProvider";
+import Sidebar from "@/components/Sidebar";
 
 export type MedicineStatus = "GOOD" | "LOW";
 
@@ -354,49 +355,7 @@ export default function InventoryPage() {
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
-      <aside className="w-64 bg-white shadow-sm flex flex-col justify-between">
-        <div>
-          <div className="flex items-center justify-normal h-20">
-            <Image src="/logo.png" alt={t("Logo")} width={80} height={80} />
-          </div>
-          <nav className="mt-6">
-            <ul className="space-y-2 px-4">
-              <li>
-                <Link href="/stock_manager/home" className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2">
-                  <LayoutDashboard size={20} />
-                  <span>{t("Dashboard")}</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/stock_manager/inventory" className="flex items-center space-x-3 bg-[var(--primary)] text-white rounded-lg px-3 py-2">
-                  <Package size={20} />
-                  <span>{t("Inventory")}</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/stock_manager/reports" className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2">
-                  <FileText size={20} />
-                  <span>{t("Reports")}</span>
-                </Link>
-              </li>
-            </ul>
-          </nav>
-        </div>
-        <div className="px-4 pb-6 space-y-3">
-          <Link href="/stock_manager/settings" className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2 cursor-pointer">
-            <Settings size={20} />
-            <span>{t("Settings")}</span>
-          </Link>
-          <Link href="/stock_manager/support" className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2 cursor-pointer">
-            <Headphones size={20} />
-            <span>{t("Support")}</span>
-          </Link>
-          <Link href="/stock_manager/logout" className="flex items-center space-x-3 hover:bg-red-100 text-red-600 rounded-lg px-3 py-2 cursor-pointer">
-            <LogOut size={20} />
-            <span>{t("Logout")}</span>
-          </Link>
-        </div>
-      </aside>
+      <Sidebar/>
 
       <div className="flex flex-col flex-1">
         {/* Header */}
