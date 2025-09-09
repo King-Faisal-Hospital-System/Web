@@ -26,6 +26,8 @@ import { fetchReports, generateReport, fetchReportStats, Report } from "@/store/
 import { fetchMedicines, Medicine } from "@/store/slices/inventorySlice";
 import { RootState, AppDispatch } from "@/store/store";
 import Link from "next/link";
+import Sidebar from "@/components/Sidebar";
+import Header from "@/components/Header";
 
 
 
@@ -127,103 +129,11 @@ export default function ReportsPage() {
   return (
     <div className="flex h-screen">
       {/* sidebar */}
-      <aside className="w-64 bg-white shadow-sm flex flex-col justify-between">
-        <div>
-          <div className="flex items-center justify-normal h-20">
-            <Image src="/logo.png" alt="Logo" width={80} height={80} />
-          </div>
-
-          <nav className="mt-6">
-            <ul className="space-y-2 px-4">
-              <li>
-                <Link
-                  href="/stock_manager/home"
-                  className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
-                >
-                  <LayoutDashboard size={20} />
-                  <span>Dashboard</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/stock_manager/inventory"
-                  className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
-                >
-                  <Package size={20} />
-                  <span>Inventory</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/stock_manager/reports"
-                  className="flex items-center space-x-3 bg-[var(--primary)] text-white rounded-lg px-3 py-2"
-                >
-                  <FileText size={20} />
-                  <span>Reports</span>
-                </Link>
-              </li>
-              
-            </ul>
-          </nav>
-        </div>
-
-        <div className="px-4 pb-6 space-y-3">
-          <Link
-            href="/stock_manager/settings"
-            className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2 cursor-pointer"
-          >
-            <Settings size={20} />
-            <span>Settings</span>
-          </Link>
-          <Link
-            href="/stock_manager/support"
-            className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2 cursor-pointer"
-          >
-            <Headphones size={20} />
-            <span>Support</span>
-          </Link>
-          <Link
-            href="/stock_manager/logout"
-            className="flex items-center space-x-3 hover:bg-red-100 text-red-600 rounded-lg px-3 py-2 cursor-pointer"
-          >
-            <LogOut size={20} />
-            <span>Logout</span>
-          </Link>
-        </div>
-      </aside>
+      <Sidebar/>
 
       <div className="flex flex-col flex-1">
         {/* header */}
-        <div className="flex justify-between items-center bg-white px-6 py-4 border-b border-gray-200">
-          <div className="relative w-72">
-            <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              size={20}
-            />
-            <input
-              type="text"
-              placeholder="Search..."
-              className="pl-10 pr-4 py-2 w-full rounded-lg bg-[var(--input-field)] outline-none focus:ring-2 focus:ring-[var(--primary)]"
-            />
-          </div>
-
-          <div className="flex items-center space-x-4">
-            <Bell size={22} className="cursor-pointer" />
-            <div className="flex items-center space-x-2">
-              <Image
-                src="/profile.jpg"
-                alt="User"
-                className="w-10 h-10 rounded-full"
-                width={40}
-                height={40}
-              />
-              <div>
-                <p className="text-sm font-semibold">Dr. Dylan</p>
-                <p className="text-xs text-gray-500">Pharmacist</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Header/>
 
         {/* body */}
         <main className="flex-1 p-6 overflow-y-auto">

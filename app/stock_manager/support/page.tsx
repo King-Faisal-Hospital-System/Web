@@ -20,6 +20,7 @@ import Image from "next/image";
 import { useState } from "react";
 import Link from "next/link";
 import { useLanguageContext } from "../../../components/LanguageProvider";
+import Sidebar from "@/components/Sidebar";
 
 export default function SupportPage() {
   const { t } = useLanguageContext();
@@ -49,67 +50,7 @@ export default function SupportPage() {
   return (
     <div className="flex h-screen">
       {/* sidebar */}
-      <aside className="w-64 bg-white shadow-sm flex flex-col justify-between">
-        <div>
-          <div className="flex items-center justify-start h-20 px-4">
-            <Image src="/logo.png" alt="Logo" width={80} height={80} />
-          </div>
-          <nav className="mt-6">
-            <ul className="space-y-2 px-4">
-              <li>
-                <Link
-                  href="/stock_manager/home"
-                  className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
-                >
-                  <LayoutDashboard size={20} />
-                  <span>Dashboard</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/stock_manager/inventory"
-                  className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
-                >
-                  <Package size={20} />
-                  <span>Inventory</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/stock_manager/reports"
-                  className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2"
-                >
-                  <FileText size={20} />
-                  <span>Reports</span>
-                </Link>
-              </li>
-            </ul>
-          </nav>
-        </div>
-        <div className="px-4 pb-6 space-y-3">
-          <Link
-            href="/stock_manager/settings"
-            className="flex items-center space-x-3  hover:bg-[var(--input-field)]  rounded-lg px-3 py-2 cursor-pointer"
-          >
-            <Settings size={20} />
-            <span>Settings</span>
-          </Link>
-          <Link
-            href="/stock_manager/support"
-            className="flex items-center space-x-3  bg-[var(--primary)] text-white rounded-lg px-3 py-2 cursor-pointer"
-          >
-            <Headphones size={20} className="text-white" />
-            <span>Support</span>
-          </Link>
-          <Link
-            href="/stock_manager/logout"
-            className="flex items-center space-x-3 hover:bg-red-100 text-red-600 rounded-lg px-3 py-2 cursor-pointer"
-          >
-            <LogOut size={20} />
-            <span>Logout</span>
-          </Link>
-        </div>
-      </aside>
+      <Sidebar/>
 
       <div
         className="flex flex-col flex-1"
