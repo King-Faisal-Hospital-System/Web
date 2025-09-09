@@ -23,6 +23,7 @@ import type { RootState, AppDispatch } from "../../../store/store";
 import { fetchUserSettings, updateUserSettings, fetchBackupStatus, initiateBackup, updatePersonalInfo, updatePreferences, updateNotifications, updateBackupConfig } from "../../../store/slices/settingsSlice";
 import { setLanguage, initializeLanguage } from "../../../store/slices/languageSlice";
 import { useLanguageContext } from "../../../components/LanguageProvider";
+import Sidebar from "@/components/Sidebar";
 
 const SidebarNavItem = ({
   href,
@@ -118,35 +119,7 @@ export default function SettingsPage() {
   return (
     <div className="flex h-screen">
       {/* sidebar */}
-      <aside className="w-64 bg-white shadow-sm flex flex-col justify-between">
-        <div>
-          <div className="flex items-center justify-start h-20">
-            <Image src="/logo.png" alt="Logo" width={80} height={80} />
-          </div>
-          <nav className="mt-6">
-            <ul className="space-y-2 px-4">
-              <SidebarNavItem href="/stock_manager/home" icon={LayoutDashboard} label="Dashboard" />
-              <SidebarNavItem href="/stock_manager/inventory" icon={Package} label="Inventory" />
-              <SidebarNavItem href="/stock_manager/reports" icon={FileText} label="Reports" />
-              
-            </ul>
-          </nav>
-        </div>
-        <div className="px-4 pb-6 space-y-3">
-          <Link href="/admin/settings" className="flex items-center text-white  bg-[var(--primary)] space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2 cursor-pointer">
-            <Settings size={20} className="text-white" />
-            <span>Settings</span>
-          </Link>
-          <Link href="/admin/support" className="flex items-center space-x-3 hover:bg-[var(--input-field)] rounded-lg px-3 py-2 cursor-pointer">
-            <Headphones size={20} />
-            <span>Support</span>
-          </Link>
-          <Link href="/admin/logout" className="flex items-center space-x-3 hover:bg-red-100 text-red-600 rounded-lg px-3 py-2 cursor-pointer">
-            <LogOut size={20} />
-            <span>Logout</span>
-          </Link>
-        </div>
-      </aside>
+      <Sidebar/>
 
       <div className="flex flex-col flex-1" style={{ background: "var(--background)" }}>
         {/* header */}
